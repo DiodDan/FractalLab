@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>backend.academy</groupId>
-    <artifactId>java</artifactId>
+    <artifactId>fractal-flame</artifactId>
     <version>${revision}</version>
 
     <properties>
