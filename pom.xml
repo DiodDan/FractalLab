@@ -107,6 +107,14 @@
             <artifactId>mapstruct</artifactId>
         </dependency>
 
+
+        <!-- Darklaf For theme support -->
+        <dependency>
+            <groupId>com.github.weisj</groupId>
+            <artifactId>darklaf-core</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
         <!-- CLI -->
         <dependency>
             <groupId>org.jcommander</groupId>
