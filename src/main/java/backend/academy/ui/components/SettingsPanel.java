@@ -24,52 +24,119 @@ public class SettingsPanel extends JPanel {
     private final Property yBiasMinProperty;
     private final Property yBiasMaxProperty;
     private final Property gammaProperty;
+    private final Property maxThreadsProperty;
 
     public SettingsPanel(
         SettingsLoader settingsLoader,
         JButton runtimeSettingsButton,
         JButton regenerateImageButton
-        ) {
+    ) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         // Settings that can be applied within one generation
         JPanel generationSettingsPanel = new JPanel(new GridLayout(0, 1));
         generationSettingsPanel.setBorder(BorderFactory.createTitledBorder("Runtime Applicable Settings"));
 
-        generatorXMINProperty =
-            addProperty(generationSettingsPanel, "Generator XMIN", String.valueOf(settingsLoader.getGeneratorXMIN()));
-        generatorXMAXProperty =
-            addProperty(generationSettingsPanel, "Generator XMAX", String.valueOf(settingsLoader.getGeneratorXMAX()));
-        generatorYMINProperty =
-            addProperty(generationSettingsPanel, "Generator YMIN", String.valueOf(settingsLoader.getGeneratorYMIN()));
-        generatorYMAXProperty =
-            addProperty(generationSettingsPanel, "Generator YMAX", String.valueOf(settingsLoader.getGeneratorYMAX()));
-        generatorNonDrawMovesProperty = addProperty(generationSettingsPanel, "Generator Non-Draw Moves",
-            String.valueOf(settingsLoader.getGeneratorNonDrawMoves()));
-        affineTransformationsAmountProperty = addProperty(generationSettingsPanel, "Affine Transformations Amount",
-            String.valueOf(settingsLoader.getAffineTransformationsAmount()));
-        drawersAmountProperty =
-            addProperty(generationSettingsPanel, "Drawers Amount", String.valueOf(settingsLoader.getDrawersAmount()));
-        iterationsProperty =
-            addProperty(generationSettingsPanel, "Iterations", String.valueOf(settingsLoader.getIterations()));
-        xBiasMinProperty =
-            addProperty(generationSettingsPanel, "X Bias Min", String.valueOf(settingsLoader.getXBiasMin()));
-        xBiasMaxProperty =
-            addProperty(generationSettingsPanel, "X Bias Max", String.valueOf(settingsLoader.getXBiasMax()));
-        yBiasMinProperty =
-            addProperty(generationSettingsPanel, "Y Bias Min", String.valueOf(settingsLoader.getYBiasMin()));
-        yBiasMaxProperty =
-            addProperty(generationSettingsPanel, "Y Bias Max", String.valueOf(settingsLoader.getYBiasMax()));
-        gammaProperty = addProperty(generationSettingsPanel, "Gamma", String.valueOf(settingsLoader.getGamma()));
+        generatorXMINProperty = addProperty(
+            generationSettingsPanel,
+            "Generator XMIN",
+            String.valueOf(settingsLoader.getGeneratorXMIN()),
+            "Minimum X value for the generator()"
+        );
+        generatorXMAXProperty = addProperty(
+            generationSettingsPanel,
+            "Generator XMAX",
+            String.valueOf(settingsLoader.getGeneratorXMAX()),
+            "Maximum X value for the generator"
+        );
+        generatorYMINProperty = addProperty(
+            generationSettingsPanel,
+            "Generator YMIN",
+            String.valueOf(settingsLoader.getGeneratorYMIN()),
+            "Minimum Y value for the generator"
+        );
+        generatorYMAXProperty = addProperty(
+            generationSettingsPanel,
+            "Generator YMAX",
+            String.valueOf(settingsLoader.getGeneratorYMAX()),
+            "Maximum Y value for the generator"
+        );
+        generatorNonDrawMovesProperty = addProperty(
+            generationSettingsPanel,
+            "Generator Non-Draw Moves",
+            String.valueOf(settingsLoader.getGeneratorNonDrawMoves()),
+            "Number of non-draw moves for the generator"
+        );
+        affineTransformationsAmountProperty = addProperty(
+            generationSettingsPanel,
+            "Affine Transformations Amount",
+            String.valueOf(settingsLoader.getAffineTransformationsAmount()),
+            "Amount of affine transformations"
+        );
+        drawersAmountProperty = addProperty(
+            generationSettingsPanel,
+            "Drawers Amount",
+            String.valueOf(settingsLoader.getDrawersAmount()),
+            "Amount of drawers"
+        );
+        iterationsProperty = addProperty(
+            generationSettingsPanel,
+            "Iterations",
+            String.valueOf(settingsLoader.getIterations()),
+            "Number of iterations"
+        );
+        xBiasMinProperty = addProperty(
+            generationSettingsPanel,
+            "X Bias Min",
+            String.valueOf(settingsLoader.getXBiasMin()),
+            "Minimum X bias"
+        );
+        xBiasMaxProperty = addProperty(
+            generationSettingsPanel,
+            "X Bias Max",
+            String.valueOf(settingsLoader.getXBiasMax()),
+            "Maximum X bias"
+        );
+        yBiasMinProperty = addProperty(
+            generationSettingsPanel,
+            "Y Bias Min",
+            String.valueOf(settingsLoader.getYBiasMin()),
+            "Minimum Y bias"
+        );
+        yBiasMaxProperty = addProperty(
+            generationSettingsPanel,
+            "Y Bias Max",
+            String.valueOf(settingsLoader.getYBiasMax()),
+            "Maximum Y bias"
+        );
+        gammaProperty = addProperty(
+            generationSettingsPanel,
+            "Gamma",
+            String.valueOf(settingsLoader.getGamma()),
+            "Gamma value"
+        );
+        maxThreadsProperty = addProperty(
+            generationSettingsPanel,
+            "Max Threads",
+            String.valueOf(settingsLoader.getMaxDrawerThreads()),
+            "Maximum number of threads"
+        );
 
         // Settings that affect the application
         JPanel applicationSettingsPanel = new JPanel(new GridLayout(0, 1));
         applicationSettingsPanel.setBorder(BorderFactory.createTitledBorder("Regenerate Image Settings"));
-        imageWidthProperty =
-            addProperty(applicationSettingsPanel, "Image Width", String.valueOf(settingsLoader.getImageWidth()));
-        imageHeightProperty =
-            addProperty(applicationSettingsPanel, "Image Height", String.valueOf(settingsLoader.getImageHeight()));
-
+        imageWidthProperty = addProperty(
+            applicationSettingsPanel,
+            "Image Width",
+            String.valueOf(settingsLoader.getImageWidth()),
+            "Width of the image"
+        );
+        imageHeightProperty = addProperty(
+            applicationSettingsPanel,
+            "Image Height",
+            String.valueOf(settingsLoader.getImageHeight()),
+            "Height of the image"
+        );
 
         generationSettingsPanel.setBackground(UIManager.getColor("Panel.background"));
         applicationSettingsPanel.setBackground(UIManager.getColor("Panel.background"));
@@ -80,8 +147,8 @@ public class SettingsPanel extends JPanel {
         this.add(regenerateImageButton);
     }
 
-    private Property addProperty(JPanel panel, String label, String value) {
-        Property property = new Property(label);
+    private Property addProperty(JPanel panel, String label, String value, String tooltip) {
+        Property property = new Property(label, tooltip);
         property.setText(value);
         panel.add(property);
         return property;
@@ -104,5 +171,6 @@ public class SettingsPanel extends JPanel {
         settingsLoader.setYBiasMin(Double.parseDouble(yBiasMinProperty.getText()));
         settingsLoader.setYBiasMax(Double.parseDouble(yBiasMaxProperty.getText()));
         settingsLoader.setGamma(Double.parseDouble(gammaProperty.getText()));
+        settingsLoader.setMaxDrawerThreads(Integer.parseInt(maxThreadsProperty.getText()));
     }
 }
