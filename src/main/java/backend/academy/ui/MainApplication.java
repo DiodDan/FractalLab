@@ -1,30 +1,24 @@
 package backend.academy.ui;
 
 import backend.academy.SettingsLoader;
-import backend.academy.entityes.AffineTransformation;
 import backend.academy.generators.ImageGenerator;
-import backend.academy.generators.transformations.DiscShaped;
-import backend.academy.generators.transformations.Spherical;
-import backend.academy.generators.transformations.Transformation;
+import backend.academy.ui.components.FunctionalAlgorithmsSettingsPanel;
 import backend.academy.ui.components.SettingsPanel;
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -34,13 +28,9 @@ public class MainApplication {
     private final JFrame mainFrame = new JFrame("Algorithm Selector");
     private final List<String> algorithms = List.of("Algorithm 1", "Algorithm 2", "Algorithm 3");
     private final SettingsLoader settingsLoader = new SettingsLoader();
-    private final ImageGenerator imageGenerator = new ImageGenerator();
+    private final ImageGenerator imageGenerator = new ImageGenerator(settingsLoader);
     private boolean updateEventStarted = false;
-    private final Runnable drawProcess = () -> {
-        imageGenerator.startCalculation(
-            settingsLoader
-        );
-    };
+    private final Runnable drawProcess = imageGenerator::startCalculation;
     private Thread drawerThread;
 
     // Move image definition to class level
@@ -49,6 +39,9 @@ public class MainApplication {
     private JPanel imagePanel;
     private final JPanel buttonPanel = new JPanel();
     private SettingsPanel settingsPanel;
+    private FunctionalAlgorithmsSettingsPanel functionalAlgorithmsSettingsPanel;
+    private int avgHitsPerSecond = 0;
+    JLabel hitsPerSecondLabel = new JLabel("Average hits per second: 0");
 
     private void startDrawing() {
         if (drawerThread == null || !drawerThread.isAlive()) {
@@ -69,12 +62,6 @@ public class MainApplication {
         }
     }
 
-    // Method to restart the process
-    private void restartDrawing() {
-        stopDrawing();
-        startDrawing();
-    }
-
     public void runApp() {
         // Set the theme using Darcula theme
         LafManager.setTheme(new DarculaTheme());
@@ -82,13 +69,19 @@ public class MainApplication {
 
         SwingUtilities.invokeLater(() -> {
             this.setupLayout();
-            this.setupAlgorithmChecklist();
             this.setupImagePanel();
             this.setupButtons();
             this.setUpSettingsPanel();
+            this.setUpAlgorithmsSettingsPanel();
+            this.addHitsPerSecondLabel();
 
             mainFrame.setVisible(true);
         });
+    }
+
+    private void setUpAlgorithmsSettingsPanel() {
+        functionalAlgorithmsSettingsPanel = new FunctionalAlgorithmsSettingsPanel(settingsLoader);
+        mainFrame.add(functionalAlgorithmsSettingsPanel, BorderLayout.WEST);
     }
 
     private void setUpSettingsPanel() {
@@ -101,12 +94,26 @@ public class MainApplication {
         runtimeSettingsButton.setBackground(UIManager.getColor("Button.background"));
         runtimeSettingsButton.setForeground(UIManager.getColor("Button.foreground"));
 
-        JButton regenerateImageButton = new JButton("Regenerate Image");
+        JButton regenerateImageButton = new JButton("Generate Image");
+        regenerateImageButton.addActionListener(e -> {
+            updateRegenerateImageSettings();
+        });
+
+        // Set dark background and foreground for the button
+        regenerateImageButton.setBackground(UIManager.getColor("Button.background"));
+        regenerateImageButton.setForeground(UIManager.getColor("Button.foreground"));
+
         settingsPanel = new SettingsPanel(settingsLoader, runtimeSettingsButton, regenerateImageButton);
         mainFrame.add(settingsPanel, BorderLayout.EAST);
     }
 
-    private void updateRuntimeSettings(){
+    private void updateRegenerateImageSettings() {
+        settingsPanel.updateSettingsLoader(this.settingsLoader);
+        functionalAlgorithmsSettingsPanel.updateSettingsLoader(this.settingsLoader);
+        this.startCalculation();
+    }
+
+    private void updateRuntimeSettings() {
         settingsPanel.updateSettingsLoader(this.settingsLoader);
         this.imageGenerator.getFractalImage().renderWithGamma(image, settingsLoader.getGamma());
         imagePanel.repaint();
@@ -116,16 +123,14 @@ public class MainApplication {
         this.buttonPanel.setLayout(new FlowLayout());
         // Set dark background for the checklist panel
         this.buttonPanel.setBackground(UIManager.getColor("Panel.background"));
-        this.addEditImageButton();
         this.addSaveImageButton();
-        this.addShowSelectionButton();
         this.mainFrame.add(buttonPanel, BorderLayout.NORTH);
     }
 
     private void startCalculation() {
         this.stopDrawing();
         settingsLoader.generateAffineTransformations();
-        settingsLoader.setFunctionalTransformations(List.of(new DiscShaped()));
+        settingsLoader.setFunctionalTransformations(settingsLoader.getFunctionalTransformations());
         this.initImage();
         this.startDrawing();
         if (!updateEventStarted) {
@@ -199,60 +204,32 @@ public class MainApplication {
         g2d.dispose();
     }
 
-    private void addShowSelectionButton() {
-        // Add a button to display selected algorithms
-        JButton showSelectionButton = new JButton("Show Selection");
-        showSelectionButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                StringBuilder selected = new StringBuilder("Selected Algorithms:\n");
-                for (Component component : checklistPanel.getComponents()) {
-                    if (component instanceof JCheckBox checkBox) {
-                        if (checkBox.isSelected()) {
-                            selected.append("- ").append(checkBox.getText()).append("\n");
-                        }
-                    }
-                }
-
-                JOptionPane.showMessageDialog(mainFrame, selected.toString(), "Selection",
-                    JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
-
-        // Set dark background and foreground for the button
-        showSelectionButton.setBackground(UIManager.getColor("Button.background"));
-        showSelectionButton.setForeground(UIManager.getColor("Button.foreground"));
-
-        // Add the button at the bottom
-        mainFrame.add(showSelectionButton, BorderLayout.SOUTH);
-    }
-
     private void setupUpdateAction() {
         javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
             this.imageGenerator.getFractalImage().renderWithGamma(image, settingsLoader.getGamma());
             imagePanel.repaint();
+            avgHitsPerSecond = (this.imageGenerator.getFractalImage().getHitsFromLastCheck() + avgHitsPerSecond) / 2;
+            hitsPerSecondLabel.setText("AHPS: " + humanize(avgHitsPerSecond));
         });
         timer.start();
     }
 
-    private void addEditImageButton() {
-        // Add a button to edit the image
-        JButton editImageButton = new JButton("update image");
-        editImageButton.addActionListener(e -> {
-            startCalculation();
-        });
+    private void addHitsPerSecondLabel() {
+        // Add a label to show the average hits per second
+        hitsPerSecondLabel.setForeground(UIManager.getColor("Label.foreground"));
+        hitsPerSecondLabel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        // Set dark background and foreground for the button
-        editImageButton.setBackground(UIManager.getColor("Button.background"));
-        editImageButton.setForeground(UIManager.getColor("Button.foreground"));
-
-        // Add the button at the bottom
-        buttonPanel.add(editImageButton);
+        // Add the label at the bottom
+        functionalAlgorithmsSettingsPanel.add(hitsPerSecondLabel);
     }
 
     private void addSaveImageButton() {
         // Add a button to save the image
         JButton saveImageButton = new JButton("save image");
+        JButton stopRenderButton = new JButton("stop render");
+        stopRenderButton.addActionListener(e -> {
+            stopDrawing();
+        });
         saveImageButton.addActionListener(e -> {
             try {
                 javax.imageio.ImageIO.write(image, "png", new java.io.File("fractal_image.png"));
@@ -269,6 +246,17 @@ public class MainApplication {
         saveImageButton.setForeground(UIManager.getColor("Button.foreground"));
 
         // Add the button at the bottom
+        buttonPanel.add(stopRenderButton);
         buttonPanel.add(saveImageButton);
+    }
+
+    private String humanize(int number) {
+        if (number < 1000) {
+            return String.valueOf(number);
+        }
+        if (number < 1000000) {
+            return String.format("%.3fK", number / 1000.0);
+        }
+        return String.format("%.3fM", number / 1000000.0);
     }
 }
