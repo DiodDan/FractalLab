@@ -1,7 +1,12 @@
 package backend.academy;
 
 import backend.academy.entityes.AffineTransformation;
+import backend.academy.generators.transformations.CosineTransformation;
 import backend.academy.generators.transformations.DiscShaped;
+import backend.academy.generators.transformations.HeartShaped;
+import backend.academy.generators.transformations.HorseshoeTransformation;
+import backend.academy.generators.transformations.Polar;
+import backend.academy.generators.transformations.Sinusoid;
 import backend.academy.generators.transformations.Spherical;
 import backend.academy.generators.transformations.Transformation;
 import java.io.IOException;
@@ -34,7 +39,12 @@ public class SettingsLoader {
     @Setter private int generatorNonDrawMoves;
     private final List<Transformation> availableFunctionalTransformations = List.of(
         new DiscShaped(),
-        new Spherical()
+        new Spherical(),
+        new Sinusoid(),
+        new HeartShaped(),
+        new Polar(),
+        new CosineTransformation(),
+        new HorseshoeTransformation()
     );
     private final List<AffineTransformation> affineTransformations = new ArrayList<>();
     @Setter private List<Transformation> functionalTransformations = List.of();
@@ -46,6 +56,7 @@ public class SettingsLoader {
     @Setter private double yBiasMin;
     @Setter private double yBiasMax;
     @Setter private double gamma;
+    @Setter private int maxDrawerThreads;
 
     public SettingsLoader() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
@@ -66,7 +77,8 @@ public class SettingsLoader {
             generatorYMAX = Double.parseDouble(properties.getProperty("generator.YMAX"));
             generatorNonDrawMoves = Integer.parseInt(properties.getProperty("generator.nonDrawMoves"));
 
-            affineTransformationsAmount = Integer.parseInt(properties.getProperty("generator.affineTransformationsAmount"));
+            affineTransformationsAmount =
+                Integer.parseInt(properties.getProperty("generator.affineTransformationsAmount"));
             drawersAmount = Integer.parseInt(properties.getProperty("generator.drawersAmount"));
             iterations = Integer.parseInt(properties.getProperty("generator.iterations"));
 
@@ -76,6 +88,7 @@ public class SettingsLoader {
             yBiasMax = Double.parseDouble(properties.getProperty("generator.yBiasMax"));
 
             gamma = Double.parseDouble(properties.getProperty("generator.gamma"));
+            maxDrawerThreads = Integer.parseInt(properties.getProperty("generator.maxDrawerThreads"));
         } catch (IOException ex) {
             ex.printStackTrace();
         }

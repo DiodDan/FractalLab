@@ -7,25 +7,31 @@ import backend.academy.entityes.Point;
 import backend.academy.generators.transformations.Transformation;
 import backend.academy.randomizer.Randomizer;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
 @Accessors(fluent = false)
 public class ImageGenerator {
-    private final SettingsLoader settingsLoader = new SettingsLoader();
     private final Randomizer randomizer = new Randomizer();
-
-    private double XMIN = settingsLoader.getGeneratorXMIN();
-    private double XMAX = settingsLoader.getGeneratorXMAX();
-    private double YMIN = settingsLoader.getGeneratorYMIN();
-    private double YMAX = settingsLoader.getGeneratorYMAX();
-    private int nonDrawMoves = settingsLoader.getGeneratorNonDrawMoves();
+    private final SettingsLoader settingsLoader;
     @Getter private FractalImage fractalImage;
 
-    public void startCalculation(
-        SettingsLoader settingsLoader
-    ) {
+    public ImageGenerator(SettingsLoader settingsLoader) {
+        this.settingsLoader = settingsLoader;
+    }
+
+    public void startCalculation() {
+        double XMIN = settingsLoader.getGeneratorXMIN();
+        double XMAX = settingsLoader.getGeneratorXMAX();
+        double YMIN = settingsLoader.getGeneratorYMIN();
+        double YMAX = settingsLoader.getGeneratorYMAX();
+        int nonDrawMoves = settingsLoader.getGeneratorNonDrawMoves();
         int drawersAmount = settingsLoader.getDrawersAmount();
+        int maxDrawerThreads = settingsLoader.getMaxDrawerThreads();
         List<AffineTransformation> affineTransformations = settingsLoader.getAffineTransformations();
         List<Transformation> functionalTransformations = settingsLoader.getFunctionalTransformations();
         int iterations = settingsLoader.getIterations();
@@ -33,39 +39,64 @@ public class ImageGenerator {
         int height = settingsLoader.getImageHeight();
 
         fractalImage = new FractalImage(width, height);
+
+        // Create a thread pool with a maximum number of threads
+        ExecutorService executorService = Executors.newFixedThreadPool(maxDrawerThreads);
+
         for (int drawer = 0; drawer < drawersAmount; drawer++) {
-            System.out.println("Drawer " + drawer + " started");
-            Point newPoint = new Point(randomizer.randomDouble(XMIN, XMAX), randomizer.randomDouble(YMIN, YMAX));
-            for (int step = -nonDrawMoves; step < iterations; step++) {
-                AffineTransformation affineTransformation = randomizer.randomElement(affineTransformations);
-                Transformation functionalTransformation = randomizer.randomElement(functionalTransformations);
+            int finalDrawer = drawer;
+            executorService.submit(() -> {
+                System.out.println("Drawer " + finalDrawer + " started");
+                Point newPoint = new Point(ThreadLocalRandom.current().nextDouble(XMIN, XMAX), ThreadLocalRandom.current().nextDouble(YMIN, YMAX));
+                for (int step = -nonDrawMoves; step < iterations; step++) {
+                    AffineTransformation affineTransformation =
+                        affineTransformations.get(ThreadLocalRandom.current().nextInt(affineTransformations.size()));
+                    Transformation functionalTransformation = functionalTransformations.get(
+                        ThreadLocalRandom.current().nextInt(functionalTransformations.size()));
 
-                newPoint.applyAffineTransformation(affineTransformation);
-                functionalTransformation.apply(newPoint);
+                    newPoint.applyAffineTransformation(affineTransformation);
+                    functionalTransformation.apply(newPoint);
 
-                if (step >= 0
-                    && newPoint.xFits(XMIN, XMAX)
-                    && newPoint.yFits(YMIN, YMAX)
-                ) {
-                    int x = calculateX(newPoint, width);
-                    int y = calculateY(newPoint, height);
-                    if (x >= 0 && x < width && y >= 0 && y < height) {
-                        fractalImage.addPixel(x, y, affineTransformation.getPixel());
+                    if (step >= 0
+                        && newPoint.xFits(XMIN, XMAX)
+                        && newPoint.yFits(YMIN, YMAX)
+                    ) {
+                        int x = calculateX(newPoint, width);
+                        int y = calculateY(newPoint, height);
+                        if (x >= 0 && x < width && y >= 0 && y < height) {
+
+                            fractalImage.addPixel(x, y, affineTransformation.getPixel());
+                            fractalImage.incrementHits();
+
+                        }
+                    }
+                    if (Thread.currentThread().isInterrupted()) {
+                        return;
                     }
                 }
-                if (Thread.currentThread().isInterrupted()) {
-                    return;
-                }
-            }
+            });
+        }
+
+        // Shutdown the executor service and wait for all tasks to complete
+        executorService.shutdown();
+        try {
+            executorService.close();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Thread pool interrupted: " + e.getMessage());
         }
     }
 
     private int calculateX(Point point, int width) {
+        double XMIN = settingsLoader.getGeneratorXMIN();
+        double XMAX = settingsLoader.getGeneratorXMAX();
         return width - (int) Math.floor(((XMAX - point.getX()) / (XMAX - XMIN)) * width);
     }
 
     private int calculateY(Point point, int height) {
+        double YMIN = settingsLoader.getGeneratorYMIN();
+        double YMAX = settingsLoader.getGeneratorYMAX();
         return height - (int) Math.floor(((YMAX - point.getY()) / (YMAX - YMIN)) * height);
     }
-
 }

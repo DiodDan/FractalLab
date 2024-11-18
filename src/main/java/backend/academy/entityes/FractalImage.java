@@ -1,11 +1,14 @@
 package backend.academy.entityes;
 
+import lombok.Getter;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+
 
 public class FractalImage {
     private final int width;
     private final int height;
+    @Getter private int hitsFromLastCheck = 0;
     private final Pixel[][] pixels;
 
     public FractalImage(int width, int height) {
@@ -40,6 +43,28 @@ public class FractalImage {
                 }
             }
         }
+    }
+
+    public void merge(FractalImage fractalImage) {
+        hitsFromLastCheck += fractalImage.getHitsFromLastCheck();
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Pixel pixel = fractalImage.getPixel(x, y);
+                if (pixel != null) {
+                    addPixel(x, y, pixel);
+                }
+            }
+        }
+    }
+
+    public void incrementHits() {
+        this.hitsFromLastCheck++;
+    }
+
+    public int getHitsFromLastCheck() {
+        int x = this.hitsFromLastCheck;
+        hitsFromLastCheck = 0;
+        return x;
     }
 
     public void renderWithGamma(BufferedImage image, double gamma) {
