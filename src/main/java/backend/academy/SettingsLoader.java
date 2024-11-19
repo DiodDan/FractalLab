@@ -5,13 +5,13 @@ import backend.academy.generators.transformations.Cosine;
 import backend.academy.generators.transformations.Cylinder;
 import backend.academy.generators.transformations.Diamond;
 import backend.academy.generators.transformations.DiscShaped;
+import backend.academy.generators.transformations.Fire;
 import backend.academy.generators.transformations.FireRevision;
 import backend.academy.generators.transformations.Handkerchief;
 import backend.academy.generators.transformations.HeartShaped;
 import backend.academy.generators.transformations.Horseshoe;
 import backend.academy.generators.transformations.Hyperbolic;
 import backend.academy.generators.transformations.Julia;
-import backend.academy.generators.transformations.Fire;
 import backend.academy.generators.transformations.JuliaScope;
 import backend.academy.generators.transformations.Polar;
 import backend.academy.generators.transformations.Sinusoid;
@@ -87,6 +87,8 @@ public class SettingsLoader {
     @Setter private float imageContrast;
     @Setter private int saveWidth;
     @Setter private int saveHeight;
+    private String imageSaveFileBaseName;
+    private String imageSaveDir;
 
     public SettingsLoader() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
@@ -130,6 +132,8 @@ public class SettingsLoader {
             saveWidth = Integer.parseInt(properties.getProperty("image.saveWidth"));
             saveHeight = Integer.parseInt(properties.getProperty("image.saveHeight"));
 
+            imageSaveFileBaseName = properties.getProperty("image.saveFileBaseName");
+            imageSaveDir = properties.getProperty("image.saveDir");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
