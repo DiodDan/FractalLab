@@ -2,18 +2,17 @@ package backend.academy.generators.transformations;
 
 import backend.academy.entityes.Point;
 
-public class Polar implements Transformation {
-
+public class Cylinder implements Transformation {
     @Override
     public void apply(Point point) {
         double x = point.getX();
         double y = point.getY();
-        point.setX(Math.atan2(y, x) / Math.PI);
-        point.setY(Math.sqrt(x * x + y * y) - 1);
+        point.setX(Math.sin(x));
+        point.setY(y);
     }
 
     @Override
     public String getFancyName() {
-        return "Polar";
+        return "Cylinder";
     }
 }

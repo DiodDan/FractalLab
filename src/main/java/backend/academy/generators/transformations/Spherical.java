@@ -8,8 +8,9 @@ public class Spherical implements Transformation {
     public void apply(Point point) {
         double x = point.getX();
         double y = point.getY();
-        point.setX(x / (x * x + y * y));
-        point.setY(y / (x * x + y * y));
+        double r = Math.sqrt(x * x + y * y);
+        point.setX(x / (r * r));
+        point.setY(y / (r * r));
     }
 
     @Override

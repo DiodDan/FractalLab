@@ -7,9 +7,9 @@ public class DiscShaped implements Transformation {
     public void apply(Point point) {
         double x = point.getX();
         double y = point.getY();
-        double local = Math.PI * Math.sqrt(x * x + y * y);
-        point.setX((1 / Math.PI) * Math.atan(y / x) * Math.sin(local));
-        point.setY((1 / Math.PI) * Math.atan(y / x) * Math.cos(local));
+        double r = Math.PI * Math.sqrt(x * x + y * y);
+        point.setX((1 / Math.PI) * Math.atan2(y,  x) * Math.sin(r));
+        point.setY((1 / Math.PI) * Math.atan2(y,  x) * Math.cos(r));
     }
 
     @Override

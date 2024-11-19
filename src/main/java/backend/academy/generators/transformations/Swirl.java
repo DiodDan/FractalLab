@@ -2,23 +2,18 @@ package backend.academy.generators.transformations;
 
 import backend.academy.entityes.Point;
 
-public class HorseshoeTransformation implements Transformation {
-
+public class Swirl implements Transformation {
     @Override
     public void apply(Point point) {
         double x = point.getX();
         double y = point.getY();
-
-        // Compute the distance (r) from the origin
         double r = Math.sqrt(x * x + y * y);
-
-        // Apply the Horseshoe Transformation
-        point.setX((1 / r) * ((x - y) * (x + y)));
-        point.setY((1 / r) * (2 * x * y));
+        point.setX(x * Math.sin(r * r) - y * Math.cos(r * r));
+        point.setY(x * Math.cos(r * r) + y * Math.sin(r * r));
     }
 
     @Override
     public String getFancyName() {
-        return "Horseshoe (Variation 4)";
+        return "Swirl";
     }
 }

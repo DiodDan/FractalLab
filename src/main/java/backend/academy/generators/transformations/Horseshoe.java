@@ -2,22 +2,23 @@ package backend.academy.generators.transformations;
 
 import backend.academy.entityes.Point;
 
-public class HeartShaped implements Transformation {
+public class Horseshoe implements Transformation {
 
     @Override
     public void apply(Point point) {
         double x = point.getX();
         double y = point.getY();
+
+        // Compute the distance (r) from the origin
         double r = Math.sqrt(x * x + y * y);
-        double f = Math.atan2(x, y);
-        point.setX(r
-            * Math.sin(r * f));
-        point.setY(-r
-            * Math.cos(r * f));
+
+        // Apply the Horseshoe Transformation
+        point.setX((1 / r) * ((x - y) * (x + y)));
+        point.setY((1 / r) * (2 * x * y));
     }
 
     @Override
     public String getFancyName() {
-        return "Heart Shaped";
+        return "Horseshoe (Variation 4)";
     }
 }
