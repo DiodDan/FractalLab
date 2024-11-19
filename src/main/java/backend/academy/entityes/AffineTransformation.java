@@ -19,21 +19,31 @@ public class AffineTransformation {
 
     public static AffineTransformation getRandom(SettingsLoader settingsLoader) {
         Randomizer randomizer = new Randomizer();
+        double[] coefficients = generateRandomCoefficients(randomizer);
+        double e = randomizer.randomDouble(settingsLoader.getXBiasMin(), settingsLoader.getXBiasMax());
+        double f = randomizer.randomDouble(settingsLoader.getYBiasMin(), settingsLoader.getYBiasMax());
+
+        return new AffineTransformation(
+            coefficients[0], coefficients[1], coefficients[2], coefficients[3], e, f,
+            randomizer.randomPixel(settingsLoader)
+        );
+    }
+
+    private static double[] generateRandomCoefficients(Randomizer randomizer) {
         double a, b, c, d;
         do {
             a = randomizer.randomDouble(-1, 1);
             b = randomizer.randomDouble(-1, 1);
             c = randomizer.randomDouble(-1, 1);
             d = randomizer.randomDouble(-1, 1);
-        } while (Math.pow(a, 2) + Math.pow(c, 2) < 1.0
-        && Math.pow(b, 2) + Math.pow(d, 2) < 1.0
-        && Math.pow(b, 2) + Math.pow(d, 2) + Math.pow(a, 2) + Math.pow(c, 2) < 1.0 + Math.pow(a * d - b * c, 2)
-        ); // Условие сжатия
+        } while (isCompressionConditionMet(a, b, c, d));
+        return new double[] {a, b, c, d};
+    }
 
-        double e = randomizer.randomDouble(settingsLoader.getXBiasMin(), settingsLoader.getXBiasMax());
-        double f = randomizer.randomDouble(settingsLoader.getYBiasMin(), settingsLoader.getYBiasMax());
-
-        return new AffineTransformation(a, b, c, d, e, f, randomizer.randomPixel(settingsLoader));
+    private static boolean isCompressionConditionMet(double a, double b, double c, double d) {
+        return Math.pow(a, 2) + Math.pow(c, 2) < 1.0
+            && Math.pow(b, 2) + Math.pow(d, 2) < 1.0
+            && Math.pow(b, 2) + Math.pow(d, 2) + Math.pow(a, 2) + Math.pow(c, 2) < 1.0 + Math.pow(a * d - b * c, 2);
     }
 
 }
