@@ -12,17 +12,18 @@ public class FunctionalAlgorithmsSettingsPanel extends JPanel {
     private HashMap<String, Transformation> transformations = new HashMap<>();
 
     public FunctionalAlgorithmsSettingsPanel(SettingsLoader settingsLoader) {
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        JPanel functionalAlgorithmsPanel = new JPanel(new GridLayout(0, 1));
-        this.setBorder(BorderFactory.createTitledBorder("Transformation Algorithms"));
+    this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    JPanel functionalAlgorithmsPanel = new JPanel(new GridLayout(0, 1));
+    this.setBorder(BorderFactory.createTitledBorder("Transformation Algorithms"));
 
-        for (Transformation transformation : settingsLoader.getAvailableFunctionalTransformations()) {
-            transformations.put(transformation.getFancyName(), transformation);
-            addOption(transformation);
-        }
-
-        this.add(functionalAlgorithmsPanel);
+    List<Transformation> availableTransformations = settingsLoader.getAvailableFunctionalTransformations();
+    for (int i = 0; i < availableTransformations.size(); i++) {
+        Transformation transformation = availableTransformations.get(i);
+        transformations.put(transformation.getFancyName(), transformation);
+        addOption(transformation, i == availableTransformations.size() - 1);
     }
+    this.add(functionalAlgorithmsPanel);
+}
 
     public void updateSettingsLoader(SettingsLoader settingsLoader) {
         List<Transformation> checkedTransformations = new ArrayList<>();
@@ -41,9 +42,10 @@ public class FunctionalAlgorithmsSettingsPanel extends JPanel {
         settingsLoader.setFunctionalTransformations(checkedTransformations);
     }
 
-    private void addOption(Transformation algorithm) {
-        JCheckBox checkBox = new JCheckBox(algorithm.getFancyName());
-        this.add(checkBox);
-    }
+    private void addOption(Transformation algorithm, boolean isLast) {
+    JCheckBox checkBox = new JCheckBox(algorithm.getFancyName());
+    checkBox.setSelected(isLast);
+    this.add(checkBox);
+}
 
 }
