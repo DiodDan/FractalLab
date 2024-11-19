@@ -1,14 +1,24 @@
 package backend.academy;
 
 import backend.academy.entityes.AffineTransformation;
-import backend.academy.generators.transformations.CosineTransformation;
+import backend.academy.generators.transformations.Cosine;
+import backend.academy.generators.transformations.Cylinder;
+import backend.academy.generators.transformations.Diamond;
 import backend.academy.generators.transformations.DiscShaped;
+import backend.academy.generators.transformations.FireRevision;
+import backend.academy.generators.transformations.Handkerchief;
 import backend.academy.generators.transformations.HeartShaped;
-import backend.academy.generators.transformations.HorseshoeTransformation;
+import backend.academy.generators.transformations.Horseshoe;
+import backend.academy.generators.transformations.Hyperbolic;
+import backend.academy.generators.transformations.Julia;
+import backend.academy.generators.transformations.Fire;
+import backend.academy.generators.transformations.JuliaScope;
 import backend.academy.generators.transformations.Polar;
 import backend.academy.generators.transformations.Sinusoid;
 import backend.academy.generators.transformations.Spherical;
+import backend.academy.generators.transformations.Swirl;
 import backend.academy.generators.transformations.Transformation;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -43,8 +53,17 @@ public class SettingsLoader {
         new Sinusoid(),
         new HeartShaped(),
         new Polar(),
-        new CosineTransformation(),
-        new HorseshoeTransformation()
+        new Cosine(),
+        new Horseshoe(),
+        new Handkerchief(),
+        new Diamond(),
+        new Julia(),
+        new Swirl(),
+        new Fire(),
+        new FireRevision(),
+        new Cylinder(),
+        new JuliaScope(),
+        new Hyperbolic()
     );
     private final List<AffineTransformation> affineTransformations = new ArrayList<>();
     @Setter private List<Transformation> functionalTransformations = List.of();
@@ -57,6 +76,17 @@ public class SettingsLoader {
     @Setter private double yBiasMax;
     @Setter private double gamma;
     @Setter private int maxDrawerThreads;
+    @Setter private boolean useThemedColorGeneration;
+    private final Color[] themColors = {
+        new Color(104, 7, 11),
+        new Color(253, 226, 86),
+        new Color(240, 31, 23)
+    };
+    @Setter private int colorVariation;
+    @Setter private boolean imageFxApply;
+    @Setter private float imageContrast;
+    @Setter private int saveWidth;
+    @Setter private int saveHeight;
 
     public SettingsLoader() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
@@ -89,6 +119,17 @@ public class SettingsLoader {
 
             gamma = Double.parseDouble(properties.getProperty("generator.gamma"));
             maxDrawerThreads = Integer.parseInt(properties.getProperty("generator.maxDrawerThreads"));
+
+            useThemedColorGeneration =
+                Boolean.parseBoolean(properties.getProperty("generator.useThemedColorGeneration"));
+            colorVariation = Integer.parseInt(properties.getProperty("generator.colorVariation"));
+
+            imageFxApply = Boolean.parseBoolean(properties.getProperty("image.FxApply"));
+            imageContrast = Float.parseFloat(properties.getProperty("image.Contrast"));
+
+            saveWidth = Integer.parseInt(properties.getProperty("image.saveWidth"));
+            saveHeight = Integer.parseInt(properties.getProperty("image.saveHeight"));
+
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -99,5 +140,10 @@ public class SettingsLoader {
         for (int i = 0; i < this.affineTransformationsAmount; i++) {
             this.affineTransformations.add(AffineTransformation.getRandom(this));
         }
+    }
+
+    public void setAffineTransformations(List<AffineTransformation> affineTransformations) {
+        this.affineTransformations.clear();
+        this.affineTransformations.addAll(affineTransformations);
     }
 }
