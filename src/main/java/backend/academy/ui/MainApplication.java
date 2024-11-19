@@ -2,6 +2,8 @@ package backend.academy.ui;
 
 import backend.academy.SettingsLoader;
 import backend.academy.generators.ImageGenerator;
+import backend.academy.imager.ImageProcessor;
+import backend.academy.imager.ImageSaver;
 import backend.academy.ui.components.AffineTransformationSettings;
 import backend.academy.ui.components.FunctionalAlgorithmsSettingsPanel;
 import backend.academy.ui.components.SettingsPanel;
@@ -12,7 +14,6 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 import javax.swing.BorderFactory;
@@ -26,6 +27,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 public class MainApplication {
+
     private final JFrame mainFrame = new JFrame("Fractal Lab");
     private final SettingsLoader settingsLoader = new SettingsLoader();
     private final ImageGenerator imageGenerator = new ImageGenerator(settingsLoader);
@@ -35,15 +37,17 @@ public class MainApplication {
 
     // Move image definition to class level
     private BufferedImage image;
-    private final JPanel checklistPanel = new JPanel();
     private JPanel imagePanel;
     private final JPanel buttonPanel = new JPanel();
     private SettingsPanel settingsPanel;
     private FunctionalAlgorithmsSettingsPanel functionalAlgorithmsSettingsPanel;
     private int avgHitsPerSecond = 0;
     JLabel hitsPerSecondLabel = new JLabel("AHPS: 0");
-    private JProgressBar progressBar = new JProgressBar();
-    private Thread UIThread;
+    private final JProgressBar progressBar = new JProgressBar();
+
+    private final ImageProcessor imageProcessor = new ImageProcessor(settingsLoader);
+    private final ImageSaver imageSaver = new ImageSaver(settingsLoader);
+
 
     private void startDrawing() {
         if (drawerThread == null || !drawerThread.isAlive()) {
@@ -65,8 +69,8 @@ public class MainApplication {
     }
 
     public void runApp() {
-        this.UIThread = new Thread(this::setupUI);
-        this.UIThread.start();
+        Thread UIThread = new Thread(this::setupUI);
+        UIThread.start();
     }
 
     private void setIconImage() {
@@ -109,18 +113,14 @@ public class MainApplication {
 
     private void setUpSettingsPanel() {
         JButton runtimeSettingsButton = new JButton("Apply Runtime Settings");
-        runtimeSettingsButton.addActionListener(e -> {
-            updateRuntimeSettings();
-        });
+        runtimeSettingsButton.addActionListener(e -> updateRuntimeSettings());
 
         // Set dark background and foreground for the button
         runtimeSettingsButton.setBackground(UIManager.getColor("Button.background"));
         runtimeSettingsButton.setForeground(UIManager.getColor("Button.foreground"));
 
         JButton regenerateImageButton = new JButton("Generate Image");
-        regenerateImageButton.addActionListener(e -> {
-            updateRegenerateImageSettings();
-        });
+        regenerateImageButton.addActionListener(e -> updateRegenerateImageSettings());
 
         // Set dark background and foreground for the button
         regenerateImageButton.setBackground(UIManager.getColor("Button.background"));
@@ -211,11 +211,11 @@ public class MainApplication {
         javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
             this.imageGenerator.getFractalImage().renderWithGamma(image, settingsLoader.getGamma());
             imagePanel.repaint();
-            avgHitsPerSecond = (this.imageGenerator.getFractalImage().getHitsFromLastCheck() + avgHitsPerSecond) / 2;
+            avgHitsPerSecond = (this.imageGenerator.getFractalImage().resetHits() + avgHitsPerSecond) / 2;
             hitsPerSecondLabel.setText("AHPS: " + humanize(avgHitsPerSecond));
             this.progressBar.setValue(this.imageGenerator.getDrawersFinished());
             if (settingsLoader.isImageFxApply()) {
-                adjustContrast(image, settingsLoader.getImageContrast());
+                imageProcessor.adjustContrast(image);
             }
             this.progressBar.repaint();
         });
@@ -237,15 +237,19 @@ public class MainApplication {
         JButton applyImageEffectsButton = new JButton("Apply effects");
         JButton stopRenderButton = new JButton("stop render");
 
-        applyImageEffectsButton.addActionListener(e -> {
-            imagePanel.repaint();
-        });
+        applyImageEffectsButton.addActionListener(e -> imagePanel.repaint());
 
-        stopRenderButton.addActionListener(e -> {
-            stopDrawing();
-        });
+        stopRenderButton.addActionListener(e -> stopDrawing());
+
         saveImageButton.addActionListener(e -> {
-            saveImage();
+            BufferedImage resizedImage = imageProcessor.resizeImage(image);
+            ImageSaver.ImageSaveMessage message = imageSaver.saveImage(resizedImage);
+            JOptionPane.showMessageDialog(
+                mainFrame,
+                message.message(),
+                message.title(),
+                message.messageType()
+            );
         });
 
         // Set dark background and foreground for the button
@@ -256,71 +260,6 @@ public class MainApplication {
         buttonPanel.add(stopRenderButton);
         buttonPanel.add(saveImageButton);
         buttonPanel.add(applyImageEffectsButton);
-    }
-
-    private void saveImage() {
-        try {
-            java.io.File imagesDir = new java.io.File("images");
-            if (!imagesDir.exists()) {
-                imagesDir.mkdirs();
-            }
-            java.io.File file = new java.io.File(imagesDir, "fractal_image.png");
-            int counter = 1;
-            while (file.exists()) {
-                file = new java.io.File(imagesDir, "fractal_image_" + counter + ".png");
-                counter++;
-            }
-            if (settingsLoader.getImageWidth() != settingsLoader.getSaveWidth()
-                || settingsLoader.getImageHeight() != settingsLoader.getSaveHeight()) {
-                BufferedImage resizedImage = resizeImage(
-                    image,
-                    settingsLoader.getSaveWidth(),
-                    settingsLoader.getSaveHeight()
-                );
-                javax.imageio.ImageIO.write(resizedImage, "png", file);
-            } else {
-                javax.imageio.ImageIO.write(image, "png", file);
-            }
-            JOptionPane.showMessageDialog(mainFrame, "Image saved successfully!", "Success",
-                JOptionPane.INFORMATION_MESSAGE);
-        } catch (java.io.IOException ex) {
-            JOptionPane.showMessageDialog(mainFrame, "Error saving image: " + ex.getMessage(), "Error",
-                JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    public static BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
-        BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, originalImage.getType());
-        Graphics2D g = resizedImage.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
-        g.dispose();
-        return resizedImage;
-    }
-
-    public static void adjustContrast(BufferedImage originalImage, float contrastFactor) {
-        for (int x = 0; x < originalImage.getWidth(); x++) {
-            for (int y = 0; y < originalImage.getHeight(); y++) {
-                int rgb = originalImage.getRGB(x, y);
-
-                int alpha = (rgb >> 24) & 0xFF;
-                int red = (rgb >> 16) & 0xFF;
-                int green = (rgb >> 8) & 0xFF;
-                int blue = rgb & 0xFF;
-
-                // Apply contrast adjustment
-                red = clamp((int) ((red - 128) * contrastFactor + 128));
-                green = clamp((int) ((green - 128) * contrastFactor + 128));
-                blue = clamp((int) ((blue - 128) * contrastFactor + 128));
-
-                int newRgb = (alpha << 24) | (red << 16) | (green << 8) | blue;
-                originalImage.setRGB(x, y, newRgb);
-            }
-        }
-    }
-
-    private static int clamp(int value) {
-        return Math.max(0, Math.min(255, value));
     }
 
     private String humanize(int number) {

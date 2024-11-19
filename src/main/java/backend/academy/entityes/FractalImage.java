@@ -16,80 +16,60 @@ public class FractalImage {
         this.pixels = new Pixel[width][height];
     }
 
-    public Pixel getPixel(int x, int y) {
-        return this.pixels[x][y];
-    }
-
-    public void setPixel(int x, int y, Pixel pixel) {
-        this.pixels[x][y] = pixel;
-    }
-
     public void addPixel(int x, int y, Pixel pixel) {
-        if (this.pixels[x][y] == null) {
-            this.pixels[x][y] = pixel.copy();
+        if (pixels[x][y] == null) {
+            pixels[x][y] = pixel.copy();
         } else {
-            this.pixels[x][y].add(pixel);
-        }
-    }
-
-    public void render(BufferedImage image) {
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                Pixel pixel = pixels[x][y];
-                if (pixel != null) {
-                    int rgb = new Color(pixel.r, pixel.g, pixel.b).getRGB();
-                    image.setRGB(x, y, rgb);
-                }
-            }
-        }
-    }
-
-    public void merge(FractalImage fractalImage) {
-        hitsFromLastCheck += fractalImage.getHitsFromLastCheck();
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                Pixel pixel = fractalImage.getPixel(x, y);
-                if (pixel != null) {
-                    addPixel(x, y, pixel);
-                }
-            }
+            pixels[x][y].add(pixel);
         }
     }
 
     public void incrementHits() {
-        this.hitsFromLastCheck++;
+        hitsFromLastCheck++;
     }
 
-    public int getHitsFromLastCheck() {
-        int x = this.hitsFromLastCheck;
+    public int resetHits() {
+        int hits = hitsFromLastCheck;
         hitsFromLastCheck = 0;
-        return x;
+        return hits;
     }
 
     public void renderWithGamma(BufferedImage image, double gamma) {
-        double max = 0;
-        for (int row = 0; row < this.width; row++) {
-            for (int col = 0; col < this.height; col++) {
-                Pixel pixel = this.pixels[row][col];
-                if (pixel != null && pixel.hitCount != 0) {
-                    pixel.normalize();
-                    if (pixel.normal > max) {
-                        max = pixel.normal;
-                    }
-                }
-            }
+        double maxNormal = findMaxNormal();
+
+        if (maxNormal == 0) {
+            return; // No pixels to render.
         }
-        for (int row = 0; row < this.width; row++) {
-            for (int col = 0; col < this.height; col++) {
-                Pixel pixel = this.pixels[row][col];
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Pixel pixel = pixels[x][y];
                 if (pixel != null) {
-                    pixel.normal /= max;
-                    int r = (int) (pixel.r * Math.pow(pixel.normal, (1.0 / gamma)));
-                    int g = (int) (pixel.g * Math.pow(pixel.normal, (1.0 / gamma)));
-                    int b = (int) (pixel.b * Math.pow(pixel.normal, (1.0 / gamma)));
-                    image.setRGB(row, col, new Color(r, g, b).getRGB());
+                    pixel.normal /= maxNormal;
+                    int r = applyGamma(pixel.r, pixel.normal, gamma);
+                    int g = applyGamma(pixel.g, pixel.normal, gamma);
+                    int b = applyGamma(pixel.b, pixel.normal, gamma);
+                    image.setRGB(x, y, new Color(r, g, b).getRGB());
                 }
             }
         }
+    }
+
+    private double findMaxNormal() {
+        double max = 0;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Pixel pixel = pixels[x][y];
+                if (pixel != null && pixel.isHit()) {
+                    pixel.normalize();
+                    max = Math.max(max, pixel.normal);
+                }
+            }
+        }
+        return max;
+    }
+
+    private int applyGamma(double colorValue, double normal, double gamma) {
+        return (int) (colorValue * Math.pow(normal, 1.0 / gamma));
     }
 }

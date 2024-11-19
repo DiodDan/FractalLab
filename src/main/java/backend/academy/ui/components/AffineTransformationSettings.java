@@ -3,11 +3,21 @@ package backend.academy.ui.components;
 import backend.academy.SettingsLoader;
 import backend.academy.entityes.AffineTransformation;
 import backend.academy.entityes.Pixel;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 public class AffineTransformationSettings extends JPanel {
 
@@ -25,7 +35,7 @@ public class AffineTransformationSettings extends JPanel {
 
         numberOfTransformationsField = new JTextField(String.valueOf(settingsLoader.getAffineTransformationsAmount()));
         autoGenerateButton = new JButton("Auto-generate");
-        addTransformationButton = new JButton("Add Transformation");
+        addTransformationButton = new JButton("Add One");
         JButton applyButton = new JButton("Apply");
 
         add(createTopPanel(), BorderLayout.NORTH);
@@ -103,7 +113,8 @@ public class AffineTransformationSettings extends JPanel {
             settingsLoader.generateAffineTransformations();
             displayTransformations(settingsLoader);
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Invalid number format for transformations.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Invalid number format for transformations.", "Error",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
 

@@ -25,6 +25,10 @@ public class Pixel {
         this.normal = 0;
     }
 
+    public boolean isHit() {
+        return this.hitCount > 0;
+    }
+
     public Pixel copy() {
         return new Pixel(this.r, this.g, this.b);
     }
