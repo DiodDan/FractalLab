@@ -5,6 +5,7 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -16,7 +17,6 @@ public class SettingsPanel extends JPanel {
     private final Property generatorYMINProperty;
     private final Property generatorYMAXProperty;
     private final Property generatorNonDrawMovesProperty;
-    private final Property affineTransformationsAmountProperty;
     private final Property drawersAmountProperty;
     private final Property iterationsProperty;
     private final Property xBiasMinProperty;
@@ -25,6 +25,10 @@ public class SettingsPanel extends JPanel {
     private final Property yBiasMaxProperty;
     private final Property gammaProperty;
     private final Property maxThreadsProperty;
+    private final JCheckBox imageFxApplyCheckbox;
+    private final Property contrastProperty;
+    private final Property imageWidthSaveProperty;
+    private final Property imageHeightSaveProperty;
 
     public SettingsPanel(
         SettingsLoader settingsLoader,
@@ -37,105 +41,122 @@ public class SettingsPanel extends JPanel {
         JPanel generationSettingsPanel = new JPanel(new GridLayout(0, 1));
         generationSettingsPanel.setBorder(BorderFactory.createTitledBorder("Runtime Applicable Settings"));
 
-        generatorXMINProperty = addProperty(
-            generationSettingsPanel,
-            "Generator XMIN",
-            String.valueOf(settingsLoader.getGeneratorXMIN()),
-            "Minimum X value for the generator()"
-        );
-        generatorXMAXProperty = addProperty(
-            generationSettingsPanel,
-            "Generator XMAX",
-            String.valueOf(settingsLoader.getGeneratorXMAX()),
-            "Maximum X value for the generator"
-        );
-        generatorYMINProperty = addProperty(
-            generationSettingsPanel,
-            "Generator YMIN",
-            String.valueOf(settingsLoader.getGeneratorYMIN()),
-            "Minimum Y value for the generator"
-        );
-        generatorYMAXProperty = addProperty(
-            generationSettingsPanel,
-            "Generator YMAX",
-            String.valueOf(settingsLoader.getGeneratorYMAX()),
-            "Maximum Y value for the generator"
-        );
-        generatorNonDrawMovesProperty = addProperty(
-            generationSettingsPanel,
-            "Generator Non-Draw Moves",
-            String.valueOf(settingsLoader.getGeneratorNonDrawMoves()),
-            "Number of non-draw moves for the generator"
-        );
-        affineTransformationsAmountProperty = addProperty(
-            generationSettingsPanel,
-            "Affine Transformations Amount",
-            String.valueOf(settingsLoader.getAffineTransformationsAmount()),
-            "Amount of affine transformations"
-        );
-        drawersAmountProperty = addProperty(
-            generationSettingsPanel,
-            "Drawers Amount",
-            String.valueOf(settingsLoader.getDrawersAmount()),
-            "Amount of drawers"
-        );
-        iterationsProperty = addProperty(
-            generationSettingsPanel,
-            "Iterations",
-            String.valueOf(settingsLoader.getIterations()),
-            "Number of iterations"
-        );
-        xBiasMinProperty = addProperty(
-            generationSettingsPanel,
-            "X Bias Min",
-            String.valueOf(settingsLoader.getXBiasMin()),
-            "Minimum X bias"
-        );
-        xBiasMaxProperty = addProperty(
-            generationSettingsPanel,
-            "X Bias Max",
-            String.valueOf(settingsLoader.getXBiasMax()),
-            "Maximum X bias"
-        );
-        yBiasMinProperty = addProperty(
-            generationSettingsPanel,
-            "Y Bias Min",
-            String.valueOf(settingsLoader.getYBiasMin()),
-            "Minimum Y bias"
-        );
-        yBiasMaxProperty = addProperty(
-            generationSettingsPanel,
-            "Y Bias Max",
-            String.valueOf(settingsLoader.getYBiasMax()),
-            "Maximum Y bias"
-        );
         gammaProperty = addProperty(
             generationSettingsPanel,
             "Gamma",
             String.valueOf(settingsLoader.getGamma()),
             "Gamma value"
         );
-        maxThreadsProperty = addProperty(
+        imageFxApplyCheckbox = new JCheckBox("Apply Image FX", settingsLoader.isImageFxApply());
+        generationSettingsPanel.add(imageFxApplyCheckbox);
+        contrastProperty = addProperty(
             generationSettingsPanel,
-            "Max Threads",
-            String.valueOf(settingsLoader.getMaxDrawerThreads()),
-            "Maximum number of threads"
+            "Contrast",
+            String.valueOf(settingsLoader.getImageContrast()),
+            "Contrast value for image"
         );
 
         // Settings that affect the application
         JPanel applicationSettingsPanel = new JPanel(new GridLayout(0, 1));
         applicationSettingsPanel.setBorder(BorderFactory.createTitledBorder("Regenerate Image Settings"));
+
+        generatorXMINProperty = addProperty(
+            applicationSettingsPanel,
+            "Generator XMIN",
+            String.valueOf(settingsLoader.getGeneratorXMIN()),
+            "Minimum X value for the generator()"
+        );
+        generatorXMAXProperty = addProperty(
+            applicationSettingsPanel,
+            "Generator XMAX",
+            String.valueOf(settingsLoader.getGeneratorXMAX()),
+            "Maximum X value for the generator"
+        );
+        generatorYMINProperty = addProperty(
+            applicationSettingsPanel,
+            "Generator YMIN",
+            String.valueOf(settingsLoader.getGeneratorYMIN()),
+            "Minimum Y value for the generator"
+        );
+        generatorYMAXProperty = addProperty(
+            applicationSettingsPanel,
+            "Generator YMAX",
+            String.valueOf(settingsLoader.getGeneratorYMAX()),
+            "Maximum Y value for the generator"
+        );
+        generatorNonDrawMovesProperty = addProperty(
+            applicationSettingsPanel,
+            "Generator Non-Draw Moves",
+            String.valueOf(settingsLoader.getGeneratorNonDrawMoves()),
+            "Number of non-draw moves for the generator"
+        );
+        drawersAmountProperty = addProperty(
+            applicationSettingsPanel,
+            "Drawers Amount",
+            String.valueOf(settingsLoader.getDrawersAmount()),
+            "Amount of drawers"
+        );
+        iterationsProperty = addProperty(
+            applicationSettingsPanel,
+            "Iterations",
+            String.valueOf(settingsLoader.getIterations()),
+            "Number of iterations"
+        );
+        xBiasMinProperty = addProperty(
+            applicationSettingsPanel,
+            "X Bias Min",
+            String.valueOf(settingsLoader.getXBiasMin()),
+            "Minimum X bias"
+        );
+        xBiasMaxProperty = addProperty(
+            applicationSettingsPanel,
+            "X Bias Max",
+            String.valueOf(settingsLoader.getXBiasMax()),
+            "Maximum X bias"
+        );
+        yBiasMinProperty = addProperty(
+            applicationSettingsPanel,
+            "Y Bias Min",
+            String.valueOf(settingsLoader.getYBiasMin()),
+            "Minimum Y bias"
+        );
+        yBiasMaxProperty = addProperty(
+            applicationSettingsPanel,
+            "Y Bias Max",
+            String.valueOf(settingsLoader.getYBiasMax()),
+            "Maximum Y bias"
+        );
+        maxThreadsProperty = addProperty(
+            applicationSettingsPanel,
+            "Max Threads",
+            String.valueOf(settingsLoader.getMaxDrawerThreads()),
+            "Maximum number of threads"
+        );
+
         imageWidthProperty = addProperty(
             applicationSettingsPanel,
-            "Image Width",
+            "Image Width generation",
             String.valueOf(settingsLoader.getImageWidth()),
-            "Width of the image"
+            "Width of the image that will be generated"
         );
         imageHeightProperty = addProperty(
             applicationSettingsPanel,
-            "Image Height",
+            "Image Height generation",
             String.valueOf(settingsLoader.getImageHeight()),
-            "Height of the image"
+            "Height of the image that will be generated"
+        );
+
+        imageWidthSaveProperty = addProperty(
+            applicationSettingsPanel,
+            "Image Width Saving",
+            String.valueOf(settingsLoader.getImageWidth()),
+            "Width of the image that will be Saving"
+        );
+        imageHeightSaveProperty = addProperty(
+            applicationSettingsPanel,
+            "Image Height Saving",
+            String.valueOf(settingsLoader.getImageHeight()),
+            "Height of the image that will be generated"
         );
 
         generationSettingsPanel.setBackground(UIManager.getColor("Panel.background"));
@@ -162,8 +183,6 @@ public class SettingsPanel extends JPanel {
         settingsLoader.setGeneratorYMIN(Double.parseDouble(generatorYMINProperty.getText()));
         settingsLoader.setGeneratorYMAX(Double.parseDouble(generatorYMAXProperty.getText()));
         settingsLoader.setGeneratorNonDrawMoves(Integer.parseInt(generatorNonDrawMovesProperty.getText()));
-        settingsLoader.setAffineTransformationsAmount(
-            Integer.parseInt(affineTransformationsAmountProperty.getText()));
         settingsLoader.setDrawersAmount(Integer.parseInt(drawersAmountProperty.getText()));
         settingsLoader.setIterations(Integer.parseInt(iterationsProperty.getText()));
         settingsLoader.setXBiasMin(Double.parseDouble(xBiasMinProperty.getText()));
@@ -172,5 +191,9 @@ public class SettingsPanel extends JPanel {
         settingsLoader.setYBiasMax(Double.parseDouble(yBiasMaxProperty.getText()));
         settingsLoader.setGamma(Double.parseDouble(gammaProperty.getText()));
         settingsLoader.setMaxDrawerThreads(Integer.parseInt(maxThreadsProperty.getText()));
+        settingsLoader.setImageFxApply(imageFxApplyCheckbox.isSelected());
+        settingsLoader.setImageContrast(Float.parseFloat(contrastProperty.getText()));
+        settingsLoader.setSaveWidth(Integer.parseInt(imageWidthSaveProperty.getText()));
+        settingsLoader.setSaveHeight(Integer.parseInt(imageHeightSaveProperty.getText()));
     }
 }
