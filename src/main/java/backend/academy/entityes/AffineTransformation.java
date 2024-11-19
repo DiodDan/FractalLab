@@ -25,16 +25,15 @@ public class AffineTransformation {
             b = randomizer.randomDouble(-1, 1);
             c = randomizer.randomDouble(-1, 1);
             d = randomizer.randomDouble(-1, 1);
-        } while (Math.sqrt(Math.pow(a, 2) + Math.pow(d, 2)) >= 1.0); // Условие сжатия
+        } while (Math.pow(a, 2) + Math.pow(c, 2) < 1.0
+        && Math.pow(b, 2) + Math.pow(d, 2) < 1.0
+        && Math.pow(b, 2) + Math.pow(d, 2) + Math.pow(a, 2) + Math.pow(c, 2) < 1.0 + Math.pow(a * d - b * c, 2)
+        ); // Условие сжатия
 
         double e = randomizer.randomDouble(settingsLoader.getXBiasMin(), settingsLoader.getXBiasMax());
         double f = randomizer.randomDouble(settingsLoader.getYBiasMin(), settingsLoader.getYBiasMax());
 
-        return new AffineTransformation(a, b, c, d, e, f, new Pixel(
-            randomizer.randomInt(0, 255),
-            randomizer.randomInt(0, 255),
-            randomizer.randomInt(0, 255)
-        ));
+        return new AffineTransformation(a, b, c, d, e, f, randomizer.randomPixel(settingsLoader));
     }
 
 }
