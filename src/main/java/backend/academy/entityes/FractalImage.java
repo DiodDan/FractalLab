@@ -1,9 +1,8 @@
 package backend.academy.entityes;
 
-import lombok.Getter;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-
+import lombok.Getter;
 
 public class FractalImage {
     private final int width;

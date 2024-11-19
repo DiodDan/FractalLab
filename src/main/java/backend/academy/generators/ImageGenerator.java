@@ -16,9 +16,9 @@ import lombok.experimental.Accessors;
 
 @Accessors(fluent = false)
 public class ImageGenerator {
-    private final Randomizer randomizer = new Randomizer();
     private final SettingsLoader settingsLoader;
     @Getter private FractalImage fractalImage;
+    @Getter int drawersFinished = 0;
 
     public ImageGenerator(SettingsLoader settingsLoader) {
         this.settingsLoader = settingsLoader;
@@ -37,6 +37,7 @@ public class ImageGenerator {
         int iterations = settingsLoader.getIterations();
         int width = settingsLoader.getImageWidth();
         int height = settingsLoader.getImageHeight();
+        drawersFinished = 0;
 
         fractalImage = new FractalImage(width, height);
 
@@ -74,6 +75,7 @@ public class ImageGenerator {
                         return;
                     }
                 }
+                drawersFinished++;
             });
         }
 
