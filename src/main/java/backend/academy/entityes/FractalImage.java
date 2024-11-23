@@ -3,12 +3,14 @@ package backend.academy.entityes;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
+@Accessors(fluent = false)
 public class FractalImage {
     private final int width;
     private final int height;
-    @Getter private int hitsFromLastCheck = 0;
-    private final Pixel[][] pixels;
+    private int hitsFromLastCheck = 0;
+    @Getter private final Pixel[][] pixels;
     public static final int HASHING_COEFFICIENT = 31;
     public static final int HASH_STARTING_VALUE = 7;
 
