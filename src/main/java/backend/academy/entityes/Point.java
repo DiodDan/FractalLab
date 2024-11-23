@@ -14,12 +14,7 @@ public class Point {
     double y;
 
     public void applyAffineTransformation(AffineTransformation affineTransformation) {
-        x = affineTransformation.a * x
-            + affineTransformation.b * y
-            + affineTransformation.e;
-        y = affineTransformation.c * x
-            + affineTransformation.d * y
-            + affineTransformation.f;
+        affineTransformation.applyAffineTransformation(this);
     }
 
     public boolean xFits(double xMin, double xMax) {
@@ -29,5 +24,4 @@ public class Point {
     public boolean yFits(double yMin, double yMax) {
         return y >= yMin && y <= yMax;
     }
-
 }

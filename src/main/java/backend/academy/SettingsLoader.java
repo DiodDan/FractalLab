@@ -24,12 +24,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import backend.academy.generators.transformations.Waves;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.log4j.Log4j2;
 
 @Getter
 @Accessors(fluent = false)
+@Log4j2
 public class SettingsLoader {
     private final Properties properties = new Properties();
     // application settings
@@ -63,7 +66,8 @@ public class SettingsLoader {
         new FireRevision(),
         new Cylinder(),
         new JuliaScope(),
-        new Hyperbolic()
+        new Hyperbolic(),
+        new Waves(1.0, 2.0, 0.5, 1.5)
     );
     private final List<AffineTransformation> affineTransformations = new ArrayList<>();
     @Setter private List<Transformation> functionalTransformations = List.of();
@@ -89,11 +93,19 @@ public class SettingsLoader {
     @Setter private int saveHeight;
     private String imageSaveFileBaseName;
     private String imageSaveDir;
+    @Setter private double scale;
+    @Setter private double horizontalBias;
+    @Setter private double verticalBias;
+    private int maxScale;
+    private int leftBound ;
+    private int rightBound;
+    private int topBound;
+    private int bottomBound;
 
     public SettingsLoader() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
             if (input == null) {
-                System.out.println("Sorry, unable to find application.properties");
+                log.info("Sorry, unable to find application.properties");
                 return;
             }
             properties.load(input);
@@ -134,8 +146,18 @@ public class SettingsLoader {
 
             imageSaveFileBaseName = properties.getProperty("image.saveFileBaseName");
             imageSaveDir = properties.getProperty("image.saveDir");
+
+            scale = Double.parseDouble(properties.getProperty("generator.scale"));
+            horizontalBias = Double.parseDouble(properties.getProperty("generator.horizontalBias"));
+            verticalBias = Double.parseDouble(properties.getProperty("generator.verticalBias"));
+            maxScale = Integer.parseInt(properties.getProperty("generator.maxScale"));
+            leftBound = Integer.parseInt(properties.getProperty("generator.leftBound"));
+            rightBound = Integer.parseInt(properties.getProperty("generator.rightBound"));
+            topBound = Integer.parseInt(properties.getProperty("generator.topBound"));
+            bottomBound = Integer.parseInt(properties.getProperty("generator.bottomBound"));
+
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error("Error loading application properties: {}", ex.getMessage());
         }
     }
 

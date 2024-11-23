@@ -31,7 +31,7 @@ public class AffineTransformationSettings extends JPanel {
 
     public AffineTransformationSettings(SettingsLoader settingsLoader) {
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(800, 300)); // Set fixed size
+        setPreferredSize(new Dimension(800, 300));
 
         numberOfTransformationsField = new JTextField(String.valueOf(settingsLoader.getAffineTransformationsAmount()));
         autoGenerateButton = new JButton("Auto-generate");
@@ -41,18 +41,18 @@ public class AffineTransformationSettings extends JPanel {
         add(createTopPanel(), BorderLayout.NORTH);
         transformationsPanel = new JPanel();
         transformationsPanel.setLayout(new BoxLayout(transformationsPanel, BoxLayout.Y_AXIS));
-        add(new JScrollPane(transformationsPanel), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(transformationsPanel);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
+        add(scrollPane, BorderLayout.CENTER);
         add(createColorSettingsPanel(settingsLoader), BorderLayout.WEST);
         add(applyButton, BorderLayout.SOUTH);
 
         transformationComponents = new ArrayList<>();
 
-        // Action Listeners
         autoGenerateButton.addActionListener(e -> autoGenerateTransformations(settingsLoader));
         applyButton.addActionListener(e -> applyChanges(settingsLoader));
         addTransformationButton.addActionListener(e -> addOneTransformation(settingsLoader));
 
-        // Initialize with auto-generated transformations
         autoGenerateButton.doClick();
     }
 

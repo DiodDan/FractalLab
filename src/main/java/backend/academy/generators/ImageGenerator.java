@@ -5,7 +5,6 @@ import backend.academy.entityes.AffineTransformation;
 import backend.academy.entityes.FractalImage;
 import backend.academy.entityes.Point;
 import backend.academy.generators.transformations.Transformation;
-import backend.academy.randomizer.Randomizer;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,8 +12,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.log4j.Log4j2;
 
 @Accessors(fluent = false)
+@Log4j2
 public class ImageGenerator {
     private final SettingsLoader settingsLoader;
     @Getter private FractalImage fractalImage;
@@ -22,6 +23,7 @@ public class ImageGenerator {
 
     public ImageGenerator(SettingsLoader settingsLoader) {
         this.settingsLoader = settingsLoader;
+        fractalImage = new FractalImage(settingsLoader.getImageWidth(), settingsLoader.getImageHeight());
     }
 
     public void startCalculation() {
@@ -47,8 +49,9 @@ public class ImageGenerator {
         for (int drawer = 0; drawer < drawersAmount; drawer++) {
             int finalDrawer = drawer;
             executorService.submit(() -> {
-                System.out.println("Drawer " + finalDrawer + " started");
-                Point newPoint = new Point(ThreadLocalRandom.current().nextDouble(XMIN, XMAX), ThreadLocalRandom.current().nextDouble(YMIN, YMAX));
+                log.info("Drawer " + finalDrawer + " started");
+                Point newPoint = new Point(ThreadLocalRandom.current().nextDouble(XMIN, XMAX),
+                    ThreadLocalRandom.current().nextDouble(YMIN, YMAX));
                 for (int step = -nonDrawMoves; step < iterations; step++) {
                     AffineTransformation affineTransformation =
                         affineTransformations.get(ThreadLocalRandom.current().nextInt(affineTransformations.size()));
@@ -65,10 +68,8 @@ public class ImageGenerator {
                         int x = calculateX(newPoint, width);
                         int y = calculateY(newPoint, height);
                         if (x >= 0 && x < width && y >= 0 && y < height) {
-
                             fractalImage.addPixel(x, y, affineTransformation.getPixel());
                             fractalImage.incrementHits();
-
                         }
                     }
                     if (Thread.currentThread().isInterrupted()) {
@@ -83,10 +84,14 @@ public class ImageGenerator {
         executorService.shutdown();
         try {
             executorService.close();
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS)) {
+                log.error("Executor service did not terminate");
+            } else {
+                log.info("Executor service terminated successfully");
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            System.err.println("Thread pool interrupted: " + e.getMessage());
+            log.error("Thread pool interrupted: {}", e.getMessage());
         }
     }
 
