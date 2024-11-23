@@ -2,6 +2,8 @@ package backend.academy.entityes;
 
 import backend.academy.SettingsLoader;
 import backend.academy.randomizer.Randomizer;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -19,25 +21,33 @@ public class AffineTransformation {
 
     public static AffineTransformation getRandom(SettingsLoader settingsLoader) {
         Randomizer randomizer = new Randomizer();
-        double[] coefficients = generateRandomCoefficients(randomizer);
+        List<Double> coefficients = generateRandomCoefficients(randomizer);
         double e = randomizer.randomDouble(settingsLoader.getXBiasMin(), settingsLoader.getXBiasMax());
         double f = randomizer.randomDouble(settingsLoader.getYBiasMin(), settingsLoader.getYBiasMax());
 
         return new AffineTransformation(
-            coefficients[0], coefficients[1], coefficients[2], coefficients[3], e, f,
+            coefficients.removeFirst(),
+            coefficients.removeFirst(),
+            coefficients.removeFirst(),
+            coefficients.removeFirst(),
+            e, f,
             randomizer.randomPixel(settingsLoader)
         );
     }
 
-    private static double[] generateRandomCoefficients(Randomizer randomizer) {
-        double a, b, c, d;
+    private static List<Double> generateRandomCoefficients(Randomizer randomizer) {
+        double a;
+        double b;
+        double c;
+        double d;
+
         do {
             a = randomizer.randomDouble(-1, 1);
             b = randomizer.randomDouble(-1, 1);
             c = randomizer.randomDouble(-1, 1);
             d = randomizer.randomDouble(-1, 1);
         } while (isCompressionConditionMet(a, b, c, d));
-        return new double[] {a, b, c, d};
+        return new ArrayList<>(List.of(a, b, c, d));
     }
 
     private static boolean isCompressionConditionMet(double a, double b, double c, double d) {

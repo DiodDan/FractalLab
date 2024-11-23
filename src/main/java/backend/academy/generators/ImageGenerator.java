@@ -5,6 +5,7 @@ import backend.academy.entityes.AffineTransformation;
 import backend.academy.entityes.FractalImage;
 import backend.academy.entityes.Point;
 import backend.academy.generators.transformations.Transformation;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
@@ -74,7 +75,7 @@ public class ImageGenerator {
     }
 
     private void shutdownExecutor(ExecutorService executorService) {
-        executorService.shutdown();
+        executorService.close();
         try {
             if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS)) {
                 log.error("Executor service did not terminate properly");
@@ -87,6 +88,7 @@ public class ImageGenerator {
         }
     }
 
+    @SuppressFBWarnings("PREDICTABLE_RANDOM") // here I am using ThreadLocalRandom since it is way faster
     private Point generateRandomPoint(SettingsLoader settings) {
         return new Point(
             ThreadLocalRandom.current().nextDouble(settings.getGeneratorXMIN(), settings.getGeneratorXMAX()),
@@ -94,6 +96,7 @@ public class ImageGenerator {
         );
     }
 
+    @SuppressFBWarnings("PREDICTABLE_RANDOM") // here I am using ThreadLocalRandom since it is way faster
     private <T> T randomChoice(java.util.List<T> list) {
         return list.get(ThreadLocalRandom.current().nextInt(list.size()));
     }

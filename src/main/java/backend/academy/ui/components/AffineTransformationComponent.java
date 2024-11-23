@@ -1,6 +1,7 @@
 package backend.academy.ui.components;
 
 import backend.academy.entityes.AffineTransformation;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -16,7 +17,10 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 @Accessors(fluent = false)
+// I have to suppress the warning because the class is not intended to have translations or changeable colors
+@SuppressFBWarnings(value = {"S508C_SET_COMP_COLOR", "S508C_NON_TRANSLATABLE_STRING"})
 public class AffineTransformationComponent extends JPanel {
+    public static final int COLS = 3;
     private JTextField aField;
     private JTextField bField;
     private JTextField cField;
@@ -29,7 +33,7 @@ public class AffineTransformationComponent extends JPanel {
     public boolean isDeleted = false;
 
     public AffineTransformationComponent(AffineTransformation transformation) {
-        this.setLayout(new GridLayout(1, 3));
+        this.setLayout(new GridLayout(1, COLS));
 
         color = transformation.getPixel().getColor();
 
@@ -77,9 +81,13 @@ public class AffineTransformationComponent extends JPanel {
 
     private JTextField addFieldToMenu(JPopupMenu menu, String label, double value) {
         JPanel panel = new JPanel(new GridLayout(1, 2));
-        JLabel jLabel = new JLabel(label);
+        JLabel settingDescriptionLabel = new JLabel(label);
+
         JTextField textField = new JTextField(String.valueOf(value));
-        panel.add(jLabel);
+
+        settingDescriptionLabel.setLabelFor(textField);
+
+        panel.add(settingDescriptionLabel);
         panel.add(textField);
         menu.add(panel);
         return textField;
@@ -108,17 +116,9 @@ public class AffineTransformationComponent extends JPanel {
         transformation.f = getF();
     }
 
-    private JTextField addField(String label) {
-        JLabel jLabel = new JLabel(label);
-        JTextField textField = new JTextField();
-        this.add(jLabel);
-        this.add(textField);
-        return textField;
-    }
-
     private void chooseColor() {
-        Color TempColor = JColorChooser.showDialog(this, "Color", color);
-        color = TempColor != null ? TempColor : color;
+        Color tempColor = JColorChooser.showDialog(this, "Color", color);
+        color = tempColor != null ? tempColor : color;
         if (color != null) {
             colorButton.setBackground(color);
         }

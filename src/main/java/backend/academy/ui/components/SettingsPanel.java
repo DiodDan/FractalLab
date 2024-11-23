@@ -2,6 +2,8 @@ package backend.academy.ui.components;
 
 import backend.academy.SettingsLoader;
 import java.awt.GridLayout;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -12,224 +14,166 @@ import javax.swing.JSlider;
 import javax.swing.UIManager;
 
 public class SettingsPanel extends JPanel {
-    private final Property imageWidthProperty;
-    private final Property imageHeightProperty;
-    private final Property generatorXMINProperty;
-    private final Property generatorXMAXProperty;
-    private final Property generatorYMINProperty;
-    private final Property generatorYMAXProperty;
-    private final Property generatorNonDrawMovesProperty;
-    private final Property drawersAmountProperty;
-    private final Property iterationsProperty;
-    private final Property xBiasMinProperty;
-    private final Property xBiasMaxProperty;
-    private final Property yBiasMinProperty;
-    private final Property yBiasMaxProperty;
-    private final Property gammaProperty;
-    private final Property maxThreadsProperty;
+
+    public static final String PANEL_BACKGROUND = "Panel.background";
+
+    // Константы для строк
+    private static final String GENERATOR_XMIN = "Generator XMIN";
+    private static final String GENERATOR_XMAX = "Generator XMAX";
+    private static final String GENERATOR_YMIN = "Generator YMIN";
+    private static final String GENERATOR_YMAX = "Generator YMAX";
+    private static final String GENERATOR_NON_DRAW_MOVES = "Generator Non-Draw Moves";
+    private static final String DRAWERS_AMOUNT = "Drawers Amount";
+    private static final String ITERATIONS = "Iterations";
+    private static final String X_BIAS_MIN = "X Bias Min";
+    private static final String X_BIAS_MAX = "X Bias Max";
+    private static final String Y_BIAS_MIN = "Y Bias Min";
+    private static final String Y_BIAS_MAX = "Y Bias Max";
+    private static final String MAX_THREADS = "Max Threads";
+    private static final String IMAGE_WIDTH_GENERATION = "Image Width generation";
+    private static final String IMAGE_HEIGHT_GENERATION = "Image Height generation";
+    private static final String IMAGE_WIDTH_SAVING = "Image Width Saving";
+    private static final String IMAGE_HEIGHT_SAVING = "Image Height Saving";
+
+    private final Map<String, Property> properties = new HashMap<>();
     private final JCheckBox imageFxApplyCheckbox;
-    private final Property contrastProperty;
-    private final Property imageWidthSaveProperty;
-    private final Property imageHeightSaveProperty;
     private final JSlider scaleSlider;
     private final JSlider horizontalBiasSlider;
     private final JSlider verticalBiasSlider;
     private final SettingsLoader settings;
-    private final int scaleDelimiter = 1000;
+    private static final int SCALE_DELIMITER = 1000;
 
-    public SettingsPanel(
-        SettingsLoader settings,
-        JButton runtimeSettingsButton,
-        JButton regenerateImageButton
-    ) {
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    public SettingsPanel(SettingsLoader settings, JButton runtimeSettingsButton, JButton regenerateImageButton) {
         this.settings = settings;
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        // Settings that can be applied within one generation
-        JPanel generationSettingsPanel = new JPanel(new GridLayout(0, 1));
-        generationSettingsPanel.setBorder(BorderFactory.createTitledBorder("Runtime Applicable Settings"));
+        // Панели для настроек
+        JPanel generationSettingsPanel = createTitledPanel("Runtime Applicable Settings");
+        JPanel applicationSettingsPanel = createTitledPanel("Regenerate Image Settings");
 
-        gammaProperty = addProperty(
-            generationSettingsPanel,
-            "Gamma",
-            String.valueOf(settings.getGamma()),
-            "Gamma value"
-        );
+        // Добавляем настройки
+        addProperty(generationSettingsPanel, "Gamma", String.valueOf(settings.getGamma()), "Gamma value");
         imageFxApplyCheckbox = new JCheckBox("Apply Image FX", settings.isImageFxApply());
         generationSettingsPanel.add(imageFxApplyCheckbox);
-        contrastProperty = addProperty(
-            generationSettingsPanel,
-            "Contrast",
-            String.valueOf(settings.getImageContrast()),
-            "Contrast value for image"
-        );
+        addProperty(generationSettingsPanel, "Contrast", String.valueOf(settings.getImageContrast()), "Contrast value");
 
-        // Settings that affect the application
-        JPanel applicationSettingsPanel = new JPanel(new GridLayout(0, 1));
-        applicationSettingsPanel.setBorder(BorderFactory.createTitledBorder("Regenerate Image Settings"));
+        scaleSlider = createSlider(applicationSettingsPanel, "Scale", 1, settings.getMaxScale(),
+            (int) settings.getScale() * SCALE_DELIMITER);
+        horizontalBiasSlider = createSlider(applicationSettingsPanel, "Horizontal Bias",
+            settings.getLeftBound(), settings.getRightBound(),
+            (int) settings.getHorizontalBias() * SCALE_DELIMITER);
+        verticalBiasSlider = createSlider(applicationSettingsPanel, "Vertical Bias",
+            settings.getBottomBound(), settings.getTopBound(),
+            (int) settings.getVerticalBias() * SCALE_DELIMITER);
 
-        applicationSettingsPanel.add(new JLabel("Scale"));
-        scaleSlider = new JSlider(1, settings.getMaxScale(), (int) settings.getScale() * scaleDelimiter);
-        applicationSettingsPanel.add(scaleSlider);
-        scaleSlider.addChangeListener(e -> recalculateScaleAndBias());
+        addGeneratorSettings(applicationSettingsPanel);
+        addImageSettings(applicationSettingsPanel);
 
-        applicationSettingsPanel.add(new JLabel("horizontal Bias"));
-        horizontalBiasSlider =
-            new JSlider(settings.getLeftBound(), settings.getRightBound(), (int) settings.getHorizontalBias() * 1000);
-        applicationSettingsPanel.add(horizontalBiasSlider);
-        horizontalBiasSlider.addChangeListener(e -> recalculateScaleAndBias());
-
-        applicationSettingsPanel.add(new JLabel("Vertical Bias"));
-        verticalBiasSlider =
-            new JSlider(settings.getBottomBound(), settings.getTopBound(), (int) settings.getVerticalBias() * 1000);
-        applicationSettingsPanel.add(verticalBiasSlider);
-        verticalBiasSlider.addChangeListener(e -> recalculateScaleAndBias());
-
-        generatorXMINProperty = addProperty(
-            applicationSettingsPanel,
-            "Generator XMIN",
-            String.valueOf(settings.getGeneratorXMIN()),
-            "Minimum X value for the generator()"
-        );
-        generatorXMAXProperty = addProperty(
-            applicationSettingsPanel,
-            "Generator XMAX",
-            String.valueOf(settings.getGeneratorXMAX()),
-            "Maximum X value for the generator"
-        );
-        generatorYMINProperty = addProperty(
-            applicationSettingsPanel,
-            "Generator YMIN",
-            String.valueOf(settings.getGeneratorYMIN()),
-            "Minimum Y value for the generator"
-        );
-        generatorYMAXProperty = addProperty(
-            applicationSettingsPanel,
-            "Generator YMAX",
-            String.valueOf(settings.getGeneratorYMAX()),
-            "Maximum Y value for the generator"
-        );
-        generatorNonDrawMovesProperty = addProperty(
-            applicationSettingsPanel,
-            "Generator Non-Draw Moves",
-            String.valueOf(settings.getGeneratorNonDrawMoves()),
-            "Number of non-draw moves for the generator"
-        );
-        drawersAmountProperty = addProperty(
-            applicationSettingsPanel,
-            "Drawers Amount",
-            String.valueOf(settings.getDrawersAmount()),
-            "Amount of drawers"
-        );
-        iterationsProperty = addProperty(
-            applicationSettingsPanel,
-            "Iterations",
-            String.valueOf(settings.getIterations()),
-            "Number of iterations"
-        );
-        xBiasMinProperty = addProperty(
-            applicationSettingsPanel,
-            "X Bias Min",
-            String.valueOf(settings.getXBiasMin()),
-            "Minimum X bias"
-        );
-        xBiasMaxProperty = addProperty(
-            applicationSettingsPanel,
-            "X Bias Max",
-            String.valueOf(settings.getXBiasMax()),
-            "Maximum X bias"
-        );
-        yBiasMinProperty = addProperty(
-            applicationSettingsPanel,
-            "Y Bias Min",
-            String.valueOf(settings.getYBiasMin()),
-            "Minimum Y bias"
-        );
-        yBiasMaxProperty = addProperty(
-            applicationSettingsPanel,
-            "Y Bias Max",
-            String.valueOf(settings.getYBiasMax()),
-            "Maximum Y bias"
-        );
-        maxThreadsProperty = addProperty(
-            applicationSettingsPanel,
-            "Max Threads",
-            String.valueOf(settings.getMaxDrawerThreads()),
-            "Maximum number of threads"
-        );
-
-        imageWidthProperty = addProperty(
-            applicationSettingsPanel,
-            "Image Width generation",
-            String.valueOf(settings.getImageWidth()),
-            "Width of the image that will be generated"
-        );
-        imageHeightProperty = addProperty(
-            applicationSettingsPanel,
-            "Image Height generation",
-            String.valueOf(settings.getImageHeight()),
-            "Height of the image that will be generated"
-        );
-
-        imageWidthSaveProperty = addProperty(
-            applicationSettingsPanel,
-            "Image Width Saving",
-            String.valueOf(settings.getImageWidth()),
-            "Width of the image that will be Saving"
-        );
-        imageHeightSaveProperty = addProperty(
-            applicationSettingsPanel,
-            "Image Height Saving",
-            String.valueOf(settings.getImageHeight()),
-            "Height of the image that will be generated"
-        );
-
-        generationSettingsPanel.setBackground(UIManager.getColor("Panel.background"));
-        applicationSettingsPanel.setBackground(UIManager.getColor("Panel.background"));
+        generationSettingsPanel.setBackground(UIManager.getColor(PANEL_BACKGROUND));
+        applicationSettingsPanel.setBackground(UIManager.getColor(PANEL_BACKGROUND));
 
         this.add(generationSettingsPanel);
         this.add(runtimeSettingsButton);
         this.add(applicationSettingsPanel);
         this.add(regenerateImageButton);
+
+        scaleSlider.addChangeListener(e -> recalculateScaleAndBias());
+        horizontalBiasSlider.addChangeListener(e -> recalculateScaleAndBias());
+        verticalBiasSlider.addChangeListener(e -> recalculateScaleAndBias());
     }
 
-    private Property addProperty(JPanel panel, String label, String value, String tooltip) {
+    private JPanel createTitledPanel(String title) {
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.setBorder(BorderFactory.createTitledBorder(title));
+        return panel;
+    }
+
+    private JSlider createSlider(JPanel panel, String label, int min, int max, int value) {
+        panel.add(new JLabel(label));
+        JSlider slider = new JSlider(min, max, value);
+        panel.add(slider);
+        return slider;
+    }
+
+    private void addGeneratorSettings(JPanel panel) {
+        addProperty(panel, GENERATOR_XMIN,
+            String.valueOf(settings.getGeneratorXMIN()), "Minimum X value for the generator");
+        addProperty(panel, GENERATOR_XMAX,
+            String.valueOf(settings.getGeneratorXMAX()), "Maximum X value for the generator");
+        addProperty(panel, GENERATOR_YMIN,
+            String.valueOf(settings.getGeneratorYMIN()), "Minimum Y value for the generator");
+        addProperty(panel, GENERATOR_YMAX,
+            String.valueOf(settings.getGeneratorYMAX()), "Maximum Y value for the generator");
+        addProperty(panel, GENERATOR_NON_DRAW_MOVES,
+            String.valueOf(settings.getGeneratorNonDrawMoves()), "Number of non-draw moves");
+        addProperty(panel, DRAWERS_AMOUNT,
+            String.valueOf(settings.getDrawersAmount()), "Amount of drawers");
+        addProperty(panel, ITERATIONS,
+            String.valueOf(settings.getIterations()), "Number of iterations");
+        addProperty(panel, X_BIAS_MIN,
+            String.valueOf(settings.getXBiasMin()), "Minimum X bias");
+        addProperty(panel, X_BIAS_MAX,
+            String.valueOf(settings.getXBiasMax()), "Maximum X bias");
+        addProperty(panel, Y_BIAS_MIN,
+            String.valueOf(settings.getYBiasMin()), "Minimum Y bias");
+        addProperty(panel, Y_BIAS_MAX,
+            String.valueOf(settings.getYBiasMax()), "Maximum Y bias");
+        addProperty(panel, MAX_THREADS,
+            String.valueOf(settings.getMaxDrawerThreads()), "Maximum number of threads");
+    }
+
+    private void addImageSettings(JPanel panel) {
+        addProperty(panel, IMAGE_WIDTH_GENERATION, String.valueOf(settings.getImageWidth()),
+            "Width of the generated image");
+        addProperty(panel, IMAGE_HEIGHT_GENERATION, String.valueOf(settings.getImageHeight()),
+            "Height of the generated image");
+        addProperty(panel, IMAGE_WIDTH_SAVING, String.valueOf(settings.getSaveWidth()), "Width of the saved image");
+        addProperty(panel, IMAGE_HEIGHT_SAVING, String.valueOf(settings.getSaveHeight()), "Height of the saved image");
+    }
+
+    private void addProperty(JPanel panel, String label, String value, String tooltip) {
         Property property = new Property(label, tooltip);
         property.setText(value);
+        properties.put(label, property);
         panel.add(property);
-        return property;
     }
 
     private void recalculateScaleAndBias() {
-        double scale = (double) (settings.getMaxScale() - scaleSlider.getValue()) / scaleDelimiter;
-        double horizontalBias = (double) horizontalBiasSlider.getValue() / scaleDelimiter;
-        double verticalBias = (double) verticalBiasSlider.getValue() / scaleDelimiter;
+        double scale = (double) (settings.getMaxScale() - scaleSlider.getValue()) / SCALE_DELIMITER;
+        double horizontalBias = (double) horizontalBiasSlider.getValue() / SCALE_DELIMITER;
+        double verticalBias = (double) verticalBiasSlider.getValue() / SCALE_DELIMITER;
 
-        generatorYMINProperty.setText(String.valueOf(-(scale + verticalBias)));
-        generatorYMAXProperty.setText(String.valueOf(scale - verticalBias));
-        generatorXMINProperty.setText(String.valueOf(-(scale + horizontalBias)));
-        generatorXMAXProperty.setText(String.valueOf(scale - horizontalBias));
+        properties.get(GENERATOR_XMIN).setText(String.valueOf(-(scale + horizontalBias)));
+        properties.get(GENERATOR_XMAX).setText(String.valueOf(scale - horizontalBias));
+        properties.get(GENERATOR_YMIN).setText(String.valueOf(-(scale + verticalBias)));
+        properties.get(GENERATOR_YMAX).setText(String.valueOf(scale - verticalBias));
     }
 
     public void updateSettingsLoader(SettingsLoader settingsLoader) {
-        settingsLoader.setImageWidth(Integer.parseInt(imageWidthProperty.getText()));
-        settingsLoader.setImageHeight(Integer.parseInt(imageHeightProperty.getText()));
-        settingsLoader.setGeneratorXMIN(Double.parseDouble(generatorXMINProperty.getText()));
-        settingsLoader.setGeneratorXMAX(Double.parseDouble(generatorXMAXProperty.getText()));
-        settingsLoader.setGeneratorYMIN(Double.parseDouble(generatorYMINProperty.getText()));
-        settingsLoader.setGeneratorYMAX(Double.parseDouble(generatorYMAXProperty.getText()));
-        settingsLoader.setGeneratorNonDrawMoves(Integer.parseInt(generatorNonDrawMovesProperty.getText()));
-        settingsLoader.setDrawersAmount(Integer.parseInt(drawersAmountProperty.getText()));
-        settingsLoader.setIterations(Integer.parseInt(iterationsProperty.getText()));
-        settingsLoader.setXBiasMin(Double.parseDouble(xBiasMinProperty.getText()));
-        settingsLoader.setXBiasMax(Double.parseDouble(xBiasMaxProperty.getText()));
-        settingsLoader.setYBiasMin(Double.parseDouble(yBiasMinProperty.getText()));
-        settingsLoader.setYBiasMax(Double.parseDouble(yBiasMaxProperty.getText()));
-        settingsLoader.setGamma(Double.parseDouble(gammaProperty.getText()));
-        settingsLoader.setMaxDrawerThreads(Integer.parseInt(maxThreadsProperty.getText()));
+        updateGeneratorSettings(settingsLoader);
+        updateImageSettings(settingsLoader);
         settingsLoader.setImageFxApply(imageFxApplyCheckbox.isSelected());
-        settingsLoader.setImageContrast(Float.parseFloat(contrastProperty.getText()));
-        settingsLoader.setSaveWidth(Integer.parseInt(imageWidthSaveProperty.getText()));
-        settingsLoader.setSaveHeight(Integer.parseInt(imageHeightSaveProperty.getText()));
+    }
+
+    private void updateGeneratorSettings(SettingsLoader settingsLoader) {
+        settingsLoader.setGeneratorXMIN(Double.parseDouble(properties.get(GENERATOR_XMIN).getText()));
+        settingsLoader.setGeneratorXMAX(Double.parseDouble(properties.get(GENERATOR_XMAX).getText()));
+        settingsLoader.setGeneratorYMIN(Double.parseDouble(properties.get(GENERATOR_YMIN).getText()));
+        settingsLoader.setGeneratorYMAX(Double.parseDouble(properties.get(GENERATOR_YMAX).getText()));
+        settingsLoader.setGeneratorNonDrawMoves(Integer.parseInt(properties.get(GENERATOR_NON_DRAW_MOVES).getText()));
+        settingsLoader.setDrawersAmount(Integer.parseInt(properties.get(DRAWERS_AMOUNT).getText()));
+        settingsLoader.setIterations(Integer.parseInt(properties.get(ITERATIONS).getText()));
+        settingsLoader.setXBiasMin(Double.parseDouble(properties.get(X_BIAS_MIN).getText()));
+        settingsLoader.setXBiasMax(Double.parseDouble(properties.get(X_BIAS_MAX).getText()));
+        settingsLoader.setYBiasMin(Double.parseDouble(properties.get(Y_BIAS_MIN).getText()));
+        settingsLoader.setYBiasMax(Double.parseDouble(properties.get(Y_BIAS_MAX).getText()));
+        settingsLoader.setMaxDrawerThreads(Integer.parseInt(properties.get(MAX_THREADS).getText()));
+    }
+
+    private void updateImageSettings(SettingsLoader settingsLoader) {
+        settingsLoader.setImageWidth(Integer.parseInt(properties.get(IMAGE_WIDTH_GENERATION).getText()));
+        settingsLoader.setImageHeight(Integer.parseInt(properties.get(IMAGE_HEIGHT_GENERATION).getText()));
+        settingsLoader.setSaveWidth(Integer.parseInt(properties.get(IMAGE_WIDTH_SAVING).getText()));
+        settingsLoader.setSaveHeight(Integer.parseInt(properties.get(IMAGE_HEIGHT_SAVING).getText()));
     }
 }

@@ -1,11 +1,18 @@
 package backend.academy.imager;
 
 import backend.academy.SettingsLoader;
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
 public class ImageProcessor {
 
+    public static final int ALPHA_SHIFT = 24;
+    public static final int BASE = 0xFF;
+    public static final int RED_SHIFT = 16;
+    public static final int GREEN_SHIFT = 8;
+    public static final int TWO_TO_POWER_OF_7 = 128;
+    public static final int MAX_COLOR_NUMBER = 255;
     private final SettingsLoader settings;
 
     public ImageProcessor(SettingsLoader settings) {
@@ -19,12 +26,15 @@ public class ImageProcessor {
             for (int y = 0; y < image.getHeight(); y++) {
                 int rgb = image.getRGB(x, y);
 
-                int alpha = (rgb >> 24) & 0xFF;
-                int red = clamp(applyContrast((rgb >> 16) & 0xFF, contrastFactor));
-                int green = clamp(applyContrast((rgb >> 8) & 0xFF, contrastFactor));
-                int blue = clamp(applyContrast(rgb & 0xFF, contrastFactor));
+                int alpha = (rgb >> ALPHA_SHIFT) & BASE;
+                int red = clamp(applyContrast((rgb >> RED_SHIFT) & BASE, contrastFactor));
+                int green = clamp(applyContrast((rgb >> GREEN_SHIFT) & BASE, contrastFactor));
+                int blue = clamp(applyContrast(rgb & BASE, contrastFactor));
 
-                image.setRGB(x, y, (alpha << 24) | (red << 16) | (green << 8) | blue);
+                image.setRGB(x, y, (alpha << ALPHA_SHIFT)
+                    | (red << RED_SHIFT)
+                    | (green << GREEN_SHIFT)
+                    | blue);
             }
         }
     }
@@ -51,10 +61,10 @@ public class ImageProcessor {
     }
 
     private int applyContrast(int colorValue, double contrastFactor) {
-        return (int) ((colorValue - 128) * contrastFactor + 128);
+        return (int) ((colorValue - TWO_TO_POWER_OF_7) * contrastFactor + TWO_TO_POWER_OF_7);
     }
 
     private static int clamp(int value) {
-        return Math.max(0, Math.min(255, value));
+        return Math.max(0, Math.min(MAX_COLOR_NUMBER, value));
     }
 }

@@ -4,36 +4,41 @@ import backend.academy.entityes.Point;
 
 public class Fire implements Transformation {
 
+    public static final double UPWARD_MOTION_CONSTANT = 0.5;
+    public static final int ROTATION_ANGEL = 50;
+    public static final int TURBULENCE = 5;
+    public static final double TURBULENCE_Y = 0.3;
+
     @Override
-public void apply(Point point) {
-    double x = point.getX();
-    double y = point.getY();
+    public void apply(Point point) {
+        double x = point.getX();
+        double y = point.getY();
 
-    // Radial distance
-    double r = Math.sqrt(x * x + y * y);
+        // Radial distance
+        double r = Math.sqrt(x * x + y * y);
 
-    // Angle (polar coordinate)
-    double theta = Math.atan2(y, x);
+        // Angle (polar coordinate)
+        double theta = Math.atan2(y, x);
 
-    // Fire-like skew and compress
-    double newX = Math.sin(theta) * Math.sin(r);
-    double newY = Math.cos(theta) * Math.sin(r) + 0.5 * y; // Upward motion
+        // Fire-like skew and compress
+        double newX = Math.sin(theta) * Math.sin(r);
+        double newY = Math.cos(theta) * Math.sin(r) + UPWARD_MOTION_CONSTANT * y; // Upward motion
 
-    // Add turbulence for a more fire-like shape
-    newX += 0.3 * Math.sin(5 * y);
-    newY += 0.3 * Math.cos(5 * x);
+        // Add turbulence for a more fire-like shape
+        newX += TURBULENCE_Y * Math.sin(TURBULENCE * y);
+        newY += TURBULENCE_Y * Math.cos(TURBULENCE * x);
 
-    // Rotation angle in radians
-    double alpha = Math.toRadians(50);
+        // Rotation angle in radians
+        double alpha = Math.toRadians(ROTATION_ANGEL);
 
-    // Apply rotation
-    double rotatedX = newX * Math.cos(alpha) - newY * Math.sin(alpha);
-    double rotatedY = newX * Math.sin(alpha) + newY * Math.cos(alpha);
+        // Apply rotation
+        double rotatedX = newX * Math.cos(alpha) - newY * Math.sin(alpha);
+        double rotatedY = newX * Math.sin(alpha) + newY * Math.cos(alpha);
 
-    // Set transformed coordinates
-    point.setX(rotatedX);
-    point.setY(rotatedY);
-}
+        // Set transformed coordinates
+        point.setX(rotatedX);
+        point.setY(rotatedY);
+    }
 
     @Override
     public String getFancyName() {

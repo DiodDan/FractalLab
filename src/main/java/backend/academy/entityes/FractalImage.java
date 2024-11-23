@@ -9,6 +9,8 @@ public class FractalImage {
     private final int height;
     @Getter private int hitsFromLastCheck = 0;
     private final Pixel[][] pixels;
+    public static final int HASHING_COEFFICIENT = 31;
+    public static final int HASH_STARTING_VALUE = 7;
 
     public FractalImage(int width, int height) {
         this.width = width;
@@ -45,10 +47,10 @@ public class FractalImage {
             for (int y = 0; y < height; y++) {
                 Pixel pixel = pixels[x][y];
                 if (pixel != null) {
-                    pixel.normal /= maxNormal;
-                    int r = applyGamma(pixel.r, pixel.normal, gamma);
-                    int g = applyGamma(pixel.g, pixel.normal, gamma);
-                    int b = applyGamma(pixel.b, pixel.normal, gamma);
+                    pixel.setNormal(pixel.getNormal() / maxNormal);
+                    int r = applyGamma(pixel.getR(), pixel.getNormal(), gamma);
+                    int g = applyGamma(pixel.getG(), pixel.getNormal(), gamma);
+                    int b = applyGamma(pixel.getB(), pixel.getNormal(), gamma);
                     image.setRGB(x, y, new Color(r, g, b).getRGB());
                 }
             }
@@ -56,12 +58,12 @@ public class FractalImage {
     }
 
     public int hashPixelsState() {
-        int hash = 7;
+        int hash = HASH_STARTING_VALUE;
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 Pixel pixel = pixels[x][y];
                 if (pixel != null) {
-                    hash = 31 * hash + pixel.hashCode();
+                    hash = HASHING_COEFFICIENT * hash + pixel.hashCode();
                 }
             }
         }
@@ -75,7 +77,7 @@ public class FractalImage {
                 Pixel pixel = pixels[x][y];
                 if (pixel != null && pixel.isHit()) {
                     pixel.normalize();
-                    max = Math.max(max, pixel.normal);
+                    max = Math.max(max, pixel.getNormal());
                 }
             }
         }

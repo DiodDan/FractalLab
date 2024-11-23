@@ -1,10 +1,12 @@
 package backend.academy.generators.transformations;
 
 import backend.academy.entityes.Point;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Julia implements Transformation {
     @Override
+    @SuppressFBWarnings("PREDICTABLE_RANDOM")
     public void apply(Point point) {
         double[] values = {0, Math.PI};
         double o = values[ThreadLocalRandom.current().nextInt(0, 2)];

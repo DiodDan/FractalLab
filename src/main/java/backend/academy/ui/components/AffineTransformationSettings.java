@@ -3,6 +3,7 @@ package backend.academy.ui.components;
 import backend.academy.SettingsLoader;
 import backend.academy.entityes.AffineTransformation;
 import backend.academy.entityes.Pixel;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,8 +20,16 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
+// I have to suppress the warning because the class is not intended to have translations or changeable colors
+@SuppressFBWarnings(value = {"S508C_SET_COMP_COLOR", "S508C_NON_TRANSLATABLE_STRING"})
 public class AffineTransformationSettings extends JPanel {
 
+    public static final int WIDTH1 = 800;
+    public static final int HEIGHT1 = 300;
+    public static final int UNIT_INCREMENT = 10;
+    public static final int COLS = 3;
+    public static final int ROWS = 4;
+    public static final int THEME_COLORS = 3;
     private final JTextField numberOfTransformationsField;
     private final JButton autoGenerateButton;
     private final JButton addTransformationButton;
@@ -31,7 +40,7 @@ public class AffineTransformationSettings extends JPanel {
 
     public AffineTransformationSettings(SettingsLoader settingsLoader) {
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(800, 300));
+        setPreferredSize(new Dimension(WIDTH1, HEIGHT1));
 
         numberOfTransformationsField = new JTextField(String.valueOf(settingsLoader.getAffineTransformationsAmount()));
         autoGenerateButton = new JButton("Auto-generate");
@@ -42,7 +51,7 @@ public class AffineTransformationSettings extends JPanel {
         transformationsPanel = new JPanel();
         transformationsPanel.setLayout(new BoxLayout(transformationsPanel, BoxLayout.Y_AXIS));
         JScrollPane scrollPane = new JScrollPane(transformationsPanel);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(UNIT_INCREMENT);
         add(scrollPane, BorderLayout.CENTER);
         add(createColorSettingsPanel(settingsLoader), BorderLayout.WEST);
         add(applyButton, BorderLayout.SOUTH);
@@ -57,7 +66,7 @@ public class AffineTransformationSettings extends JPanel {
     }
 
     private JPanel createTopPanel() {
-        JPanel topPanel = new JPanel(new GridLayout(1, 3));
+        JPanel topPanel = new JPanel(new GridLayout(1, COLS));
         topPanel.add(new JLabel("Number of Transformations:"));
         topPanel.add(numberOfTransformationsField);
         topPanel.add(autoGenerateButton);
@@ -66,7 +75,7 @@ public class AffineTransformationSettings extends JPanel {
     }
 
     private JPanel createColorSettingsPanel(SettingsLoader settingsLoader) {
-        JPanel colorSettingsPanel = new JPanel(new GridLayout(4, 2));
+        JPanel colorSettingsPanel = new JPanel(new GridLayout(ROWS, 2));
 
         themedColorCheckbox = new JCheckBox("Use Themed Colors", settingsLoader.isUseThemedColorGeneration());
         variationsField = new JTextField(String.valueOf(settingsLoader.getColorVariation()));
@@ -86,8 +95,8 @@ public class AffineTransformationSettings extends JPanel {
     }
 
     private JButton[] createColorButtons(SettingsLoader settingsLoader) {
-        JButton[] colorButtons = new JButton[3];
-        for (int i = 0; i < 3; i++) {
+        JButton[] colorButtons = new JButton[THEME_COLORS];
+        for (int i = 0; i < THEME_COLORS; i++) {
             final int colorIndex = i;
             colorButtons[i] = new JButton("Color " + (i + 1));
             colorButtons[i].setBackground(settingsLoader.getThemColors()[i]);
@@ -113,7 +122,8 @@ public class AffineTransformationSettings extends JPanel {
             settingsLoader.generateAffineTransformations();
             displayTransformations(settingsLoader);
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Invalid number format for transformations.", "Error",
+            JOptionPane.showMessageDialog(this, "Invalid number format for transformations.",
+                "Error ",
                 JOptionPane.ERROR_MESSAGE);
         }
     }

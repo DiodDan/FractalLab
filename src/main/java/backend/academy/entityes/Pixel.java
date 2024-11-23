@@ -1,13 +1,19 @@
 package backend.academy.entityes;
 
 import java.awt.Color;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
+@Getter
+@Setter
+@Accessors(fluent = false)
 public class Pixel {
-    public int r;
-    public int g;
-    public int b;
-    public int hitCount;
-    public double normal;
+    private int r;
+    private int g;
+    private int b;
+    private int hitCount;
+    private double normal;
 
     public Pixel(int r, int g, int b) {
         this.r = r;

@@ -11,11 +11,12 @@ public class Property extends JPanel {
     public Property(String labelText, String tooltipText) {
         this.setLayout(new BorderLayout());
 
-        JLabel label = new JLabel(labelText);
-        label.setToolTipText(tooltipText);
+        JLabel settingDescriptionLabel = new JLabel(labelText);
+        settingDescriptionLabel.setToolTipText(tooltipText);
         textField = new JTextField();
+        settingDescriptionLabel.setLabelFor(textField);
 
-        this.add(label, BorderLayout.WEST);
+        this.add(settingDescriptionLabel, BorderLayout.WEST);
         this.add(textField, BorderLayout.CENTER);
     }
 

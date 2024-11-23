@@ -9,6 +9,7 @@ import backend.academy.ui.components.FunctionalAlgorithmsSettingsPanel;
 import backend.academy.ui.components.SettingsPanel;
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -32,6 +33,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
+// I have to suppress the warning because the class is not intended to have translations or changeable colors
+@SuppressFBWarnings(value = {"S508C_SET_COMP_COLOR", "S508C_NON_TRANSLATABLE_STRING"})
 public class MainApplication {
 
     // Components
@@ -56,6 +59,16 @@ public class MainApplication {
     private int avgHitsPerSecond = 0;
     private int fractalImageHash = 0;
     private boolean forceUpdate = false;
+
+    // Constants
+    public static final String PANEL_BACKGROUND = "Panel.background";
+    public static final Color FOREGROUND_PROGRESSBAR = new Color(34, 94, 0);
+    public static final int THOUSAND = 1000;
+    public static final int UNIT_INCREMENT = 10;
+    public static final int FONT_SIZE = 14;
+    public static final int HITS_WIDTH = 150;
+    public static final int HITS_HEIGHT = 30;
+    public static final int IMAGE_REDRAW_DELAY = 500;
 
     public void runApp() {
         Thread uiThread = new Thread(this::initializeUI);
@@ -86,7 +99,8 @@ public class MainApplication {
 
     private void setupMainFrame() {
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setSize(settingsLoader.getAppWidth(), settingsLoader.getAppHeight());
+        mainFrame.setMinimumSize(new Dimension(settingsLoader.getAppWidth(), settingsLoader.getAppHeight()));
+        mainFrame.pack();
         mainFrame.setLayout(new BorderLayout());
     }
 
@@ -108,7 +122,7 @@ public class MainApplication {
                 }
             }
         };
-        imagePanel.setBackground(UIManager.getColor("Panel.background"));
+        imagePanel.setBackground(UIManager.getColor(PANEL_BACKGROUND));
         imagePanel.setBorder(BorderFactory.createTitledBorder("Image Viewer"));
         initializeImage();
         mainFrame.add(imagePanel, BorderLayout.CENTER);
@@ -135,15 +149,15 @@ public class MainApplication {
         applySettingsButton.addActionListener(e -> forceUpdate = true);
         JScrollPane scrollPane = new JScrollPane(settingsPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(10);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(UNIT_INCREMENT);
         mainFrame.add(scrollPane, BorderLayout.EAST);
     }
 
     private void setupButtonPanel() {
         buttonPanel.setLayout(new FlowLayout());
-        buttonPanel.setBackground(UIManager.getColor("Panel.background"));
+        buttonPanel.setBackground(UIManager.getColor(PANEL_BACKGROUND));
 
-        progressBar.setForeground(new Color(34, 94, 0));
+        progressBar.setForeground(FOREGROUND_PROGRESSBAR);
         setupAHPSLabel();
         buttonPanel.add(progressBar);
 
@@ -154,10 +168,11 @@ public class MainApplication {
 
     private void setupAHPSLabel() {
         buttonPanel.add(hitsPerSecondLabel, BorderLayout.WEST);
+        hitsPerSecondLabel.setLabelFor(progressBar);
         hitsPerSecondLabel.setToolTipText("Average hits per second");
         hitsPerSecondLabel.setForeground(Color.WHITE);
-        hitsPerSecondLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        hitsPerSecondLabel.setPreferredSize(new Dimension(150, 30));
+        hitsPerSecondLabel.setFont(new Font("Arial", Font.BOLD, FONT_SIZE));
+        hitsPerSecondLabel.setPreferredSize(new Dimension(HITS_WIDTH, HITS_HEIGHT));
     }
 
     private void addSaveImageButton() {
@@ -205,7 +220,7 @@ public class MainApplication {
     }
 
     private void setupUpdateAction() {
-        Timer timer = new Timer(500, e -> {
+        Timer timer = new Timer(IMAGE_REDRAW_DELAY, e -> {
             int newFractalImageHash = imageGenerator.getFractalImage().hashPixelsState();
             if (this.fractalImageHash != newFractalImageHash || this.forceUpdate) {
                 this.forceUpdate = false;
@@ -227,13 +242,13 @@ public class MainApplication {
     }
 
     private String formatHits(int number) {
-        if (number < 1000) {
+        if (number < THOUSAND) {
             return String.valueOf(number);
         }
-        if (number < 1_000_000) {
-            return String.format("%.1fK", number / 1_000.0);
+        if (number < THOUSAND * THOUSAND) {
+            return String.format("%.1fK", number / (double) THOUSAND);
         }
-        return String.format("%.1fM", number / 1_000_000.0);
+        return String.format("%.1fM", number / (double) (THOUSAND * THOUSAND));
     }
 
     private void startCalculation() {

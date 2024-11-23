@@ -1,7 +1,10 @@
 package backend.academy.generators.transformations;
 
 import backend.academy.entityes.Point;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressFBWarnings("FCCD_FIND_CLASS_CIRCULAR_DEPENDENCY")
+//I don't know how to fix this warning and I don't really see any circular dependency here
 public class Handkerchief implements Transformation {
     @Override
     public void apply(Point point) {

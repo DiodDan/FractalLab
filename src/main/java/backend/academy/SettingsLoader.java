@@ -101,6 +101,8 @@ public class SettingsLoader {
     private int rightBound;
     private int topBound;
     private int bottomBound;
+    private boolean useSymmetry;
+    private final List<AffineTransformation> symmetryTransformations = new ArrayList<>();
 
     public SettingsLoader() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
@@ -155,6 +157,7 @@ public class SettingsLoader {
             rightBound = Integer.parseInt(properties.getProperty("generator.rightBound"));
             topBound = Integer.parseInt(properties.getProperty("generator.topBound"));
             bottomBound = Integer.parseInt(properties.getProperty("generator.bottomBound"));
+            useSymmetry = Boolean.parseBoolean(properties.getProperty("generator.useSymmetry"));
 
         } catch (IOException ex) {
             log.error("Error loading application properties: {}", ex.getMessage());
