@@ -5,7 +5,6 @@ import backend.academy.entityes.AffineTransformation;
 import backend.academy.entityes.FractalImage;
 import backend.academy.entityes.Point;
 import backend.academy.generators.transformations.Transformation;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
@@ -19,91 +18,113 @@ import lombok.extern.log4j.Log4j2;
 public class ImageGenerator {
     private final SettingsLoader settingsLoader;
     @Getter private FractalImage fractalImage;
-    @Getter int drawersFinished = 0;
+    @Getter private int drawersFinished;
 
     public ImageGenerator(SettingsLoader settingsLoader) {
         this.settingsLoader = settingsLoader;
-        fractalImage = new FractalImage(settingsLoader.getImageWidth(), settingsLoader.getImageHeight());
+        this.fractalImage = new FractalImage(settingsLoader.getImageWidth(), settingsLoader.getImageHeight());
     }
 
     public void startCalculation() {
-        double XMIN = settingsLoader.getGeneratorXMIN();
-        double XMAX = settingsLoader.getGeneratorXMAX();
-        double YMIN = settingsLoader.getGeneratorYMIN();
-        double YMAX = settingsLoader.getGeneratorYMAX();
-        int nonDrawMoves = settingsLoader.getGeneratorNonDrawMoves();
         int drawersAmount = settingsLoader.getDrawersAmount();
         int maxDrawerThreads = settingsLoader.getMaxDrawerThreads();
-        List<AffineTransformation> affineTransformations = settingsLoader.getAffineTransformations();
-        List<Transformation> functionalTransformations = settingsLoader.getFunctionalTransformations();
-        int iterations = settingsLoader.getIterations();
-        int width = settingsLoader.getImageWidth();
-        int height = settingsLoader.getImageHeight();
-        drawersFinished = 0;
 
-        fractalImage = new FractalImage(width, height);
+        this.fractalImage = new FractalImage(settingsLoader.getImageWidth(), settingsLoader.getImageHeight());
+        this.drawersFinished = 0;
 
-        // Create a thread pool with a maximum number of threads
         ExecutorService executorService = Executors.newFixedThreadPool(maxDrawerThreads);
 
         for (int drawer = 0; drawer < drawersAmount; drawer++) {
-            int finalDrawer = drawer;
-            executorService.submit(() -> {
-                log.info("Drawer " + finalDrawer + " started");
-                Point newPoint = new Point(ThreadLocalRandom.current().nextDouble(XMIN, XMAX),
-                    ThreadLocalRandom.current().nextDouble(YMIN, YMAX));
-                for (int step = -nonDrawMoves; step < iterations; step++) {
-                    AffineTransformation affineTransformation =
-                        affineTransformations.get(ThreadLocalRandom.current().nextInt(affineTransformations.size()));
-                    Transformation functionalTransformation = functionalTransformations.get(
-                        ThreadLocalRandom.current().nextInt(functionalTransformations.size()));
-
-                    newPoint.applyAffineTransformation(affineTransformation);
-                    functionalTransformation.apply(newPoint);
-
-                    if (step >= 0
-                        && newPoint.xFits(XMIN, XMAX)
-                        && newPoint.yFits(YMIN, YMAX)
-                    ) {
-                        int x = calculateX(newPoint, width);
-                        int y = calculateY(newPoint, height);
-                        if (x >= 0 && x < width && y >= 0 && y < height) {
-                            fractalImage.addPixel(x, y, affineTransformation.getPixel());
-                            fractalImage.incrementHits();
-                        }
-                    }
-                    if (Thread.currentThread().isInterrupted()) {
-                        return;
-                    }
-                }
-                drawersFinished++;
-            });
+            final int drawerId = drawer;
+            executorService.submit(() -> runDrawer(drawerId, settingsLoader));
         }
 
-        // Shutdown the executor service and wait for all tasks to complete
+        shutdownExecutor(executorService);
+    }
+
+    private void runDrawer(int drawerId, SettingsLoader settings) {
+        log.info("Drawer {} started", drawerId);
+
+        Point currentPoint = generateRandomPoint(settings);
+
+        for (int step = -settings.getGeneratorNonDrawMoves(); step < settings.getIterations(); step++) {
+            if (Thread.currentThread().isInterrupted()) {
+                log.warn("Drawer {} interrupted", drawerId);
+                return;
+            }
+
+            // Apply transformations
+            AffineTransformation affineTransformation = randomChoice(settings.getAffineTransformations());
+            Transformation functionalTransformation = randomChoice(settings.getFunctionalTransformations());
+            currentPoint.applyAffineTransformation(affineTransformation);
+            functionalTransformation.apply(currentPoint);
+
+            // Add pixel if within bounds
+            if (step >= 0 && isWithinBounds(currentPoint, settings)) {
+                int x = calculateX(currentPoint, settings);
+                int y = calculateY(currentPoint, settings);
+                if (isValidPixel(x, y, settings)) {
+                    fractalImage.addPixel(x, y, affineTransformation.getPixel());
+                    fractalImage.incrementHits();
+                }
+            }
+        }
+
+        incrementFinishedDrawers();
+    }
+
+    private void shutdownExecutor(ExecutorService executorService) {
         executorService.shutdown();
         try {
-            executorService.close();
             if (!executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS)) {
-                log.error("Executor service did not terminate");
+                log.error("Executor service did not terminate properly");
             } else {
                 log.info("Executor service terminated successfully");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.error("Thread pool interrupted: {}", e.getMessage());
+            log.error("Executor service interrupted: {}", e.getMessage());
         }
     }
 
-    private int calculateX(Point point, int width) {
-        double XMIN = settingsLoader.getGeneratorXMIN();
-        double XMAX = settingsLoader.getGeneratorXMAX();
-        return width - (int) Math.floor(((XMAX - point.getX()) / (XMAX - XMIN)) * width);
+    private Point generateRandomPoint(SettingsLoader settings) {
+        return new Point(
+            ThreadLocalRandom.current().nextDouble(settings.getGeneratorXMIN(), settings.getGeneratorXMAX()),
+            ThreadLocalRandom.current().nextDouble(settings.getGeneratorYMIN(), settings.getGeneratorYMAX())
+        );
     }
 
-    private int calculateY(Point point, int height) {
-        double YMIN = settingsLoader.getGeneratorYMIN();
-        double YMAX = settingsLoader.getGeneratorYMAX();
-        return height - (int) Math.floor(((YMAX - point.getY()) / (YMAX - YMIN)) * height);
+    private <T> T randomChoice(java.util.List<T> list) {
+        return list.get(ThreadLocalRandom.current().nextInt(list.size()));
+    }
+
+    private int calculateX(Point point, SettingsLoader settings) {
+        double xMin = settings.getGeneratorXMIN();
+        double xMax = settings.getGeneratorXMAX();
+        return settings.getImageWidth()
+            - (int) Math.floor(((xMax - point.getX()) / (xMax - xMin)) * settings.getImageWidth());
+    }
+
+    private int calculateY(Point point, SettingsLoader settings) {
+        double yMin = settings.getGeneratorYMIN();
+        double yMax = settings.getGeneratorYMAX();
+        return settings.getImageHeight()
+            - (int) Math.floor(((yMax - point.getY()) / (yMax - yMin)) * settings.getImageHeight());
+    }
+
+    private boolean isWithinBounds(Point point, SettingsLoader settings) {
+        double xMin = settings.getGeneratorXMIN();
+        double xMax = settings.getGeneratorXMAX();
+        double yMin = settings.getGeneratorYMIN();
+        double yMax = settings.getGeneratorYMAX();
+        return point.getX() >= xMin && point.getX() <= xMax && point.getY() >= yMin && point.getY() <= yMax;
+    }
+
+    private boolean isValidPixel(int x, int y, SettingsLoader settings) {
+        return x >= 0 && x < settings.getImageWidth() && y >= 0 && y < settings.getImageHeight();
+    }
+
+    private synchronized void incrementFinishedDrawers() {
+        drawersFinished++;
     }
 }

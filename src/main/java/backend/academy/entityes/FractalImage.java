@@ -35,7 +35,7 @@ public class FractalImage {
     }
 
     public void renderWithGamma(BufferedImage image, double gamma) {
-        double maxNormal = findMaxNormal();
+        double maxNormal = normalizePixels();
 
         if (maxNormal == 0) {
             return; // No pixels to render.
@@ -55,7 +55,7 @@ public class FractalImage {
         }
     }
 
-    private double findMaxNormal() {
+    private double normalizePixels() {
         double max = 0;
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
