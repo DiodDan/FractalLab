@@ -15,13 +15,13 @@ public class JuliaScope implements Transformation {
 
         // Determine p3 and t
         // p1 = juliaScope.power
-        double power = 6.0;
+        double power = 20.0;
         double p3 = Math.floor(Math.random() * power); // Random p3 in the range [0, power)
         double t = (theta + 2 * Math.PI * p3) / power;
 
         // Calculate scaling factor
         // p2 = juliaScope.dist
-        double distance = 0.8;
+        double distance = 0.2;
         double scale = Math.pow(r, distance / power);
 
         // Update the point

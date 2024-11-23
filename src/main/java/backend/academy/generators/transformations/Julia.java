@@ -6,8 +6,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Julia implements Transformation {
     @Override
     public void apply(Point point) {
-        double[] values = {0, Math.PI, Math.PI / 2, -Math.PI / 2};
-        double o = values[ThreadLocalRandom.current().nextInt(0, 4)];
+        double[] values = {0, Math.PI};
+        double o = values[ThreadLocalRandom.current().nextInt(0, 2)];
         double x = point.getX();
         double y = point.getY();
         double f = Math.atan2(x, y);

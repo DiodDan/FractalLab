@@ -46,4 +46,10 @@ public class AffineTransformation {
             && Math.pow(b, 2) + Math.pow(d, 2) + Math.pow(a, 2) + Math.pow(c, 2) < 1.0 + Math.pow(a * d - b * c, 2);
     }
 
+    public void applyAffineTransformation(Point point) {
+        double x = point.getX();
+        double y = point.getY();
+        point.setX(a * x + b * y + e);
+        point.setY(c * x + d * y + f);
+    }
 }
