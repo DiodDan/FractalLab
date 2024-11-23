@@ -1,60 +1,57 @@
 package backend.academy.imager;
 
 import backend.academy.SettingsLoader;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class ImageProcessor {
 
-    SettingsLoader settings;
+    private final SettingsLoader settings;
 
     public ImageProcessor(SettingsLoader settings) {
         this.settings = settings;
     }
 
-    public void adjustContrast(BufferedImage originalImage) {
+    public void adjustContrast(BufferedImage image) {
         double contrastFactor = settings.getImageContrast();
 
-        for (int x = 0; x < originalImage.getWidth(); x++) {
-            for (int y = 0; y < originalImage.getHeight(); y++) {
-                int rgb = originalImage.getRGB(x, y);
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
+                int rgb = image.getRGB(x, y);
 
                 int alpha = (rgb >> 24) & 0xFF;
-                int red = (rgb >> 16) & 0xFF;
-                int green = (rgb >> 8) & 0xFF;
-                int blue = rgb & 0xFF;
+                int red = clamp(applyContrast((rgb >> 16) & 0xFF, contrastFactor));
+                int green = clamp(applyContrast((rgb >> 8) & 0xFF, contrastFactor));
+                int blue = clamp(applyContrast(rgb & 0xFF, contrastFactor));
 
-                // Apply contrast adjustment
-                red = clamp((int) ((red - 128) * contrastFactor + 128));
-                green = clamp((int) ((green - 128) * contrastFactor + 128));
-                blue = clamp((int) ((blue - 128) * contrastFactor + 128));
-
-                int newRgb = (alpha << 24) | (red << 16) | (green << 8) | blue;
-                originalImage.setRGB(x, y, newRgb);
+                image.setRGB(x, y, (alpha << 24) | (red << 16) | (green << 8) | blue);
             }
         }
     }
 
     public BufferedImage resizeImage(BufferedImage originalImage) {
+        int originalWidth = settings.getImageWidth();
+        int originalHeight = settings.getImageHeight();
         int targetWidth = settings.getSaveWidth();
         int targetHeight = settings.getSaveHeight();
+
+        if (originalWidth == targetWidth && originalHeight == targetHeight) {
+            // Return the original image if resizing isn't needed
+            return originalImage;
+        }
 
         BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, originalImage.getType());
         Graphics2D g = resizedImage.createGraphics();
 
-        if (settings.getImageWidth() != settings.getSaveWidth()
-            || settings.getImageHeight() != settings.getSaveHeight()
-        ) {
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-
-            g.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
-        } else {
-            g.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
-        }
-
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
         g.dispose();
+
         return resizedImage;
+    }
+
+    private int applyContrast(int colorValue, double contrastFactor) {
+        return (int) ((colorValue - 128) * contrastFactor + 128);
     }
 
     private static int clamp(int value) {

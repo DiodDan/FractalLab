@@ -3,7 +3,6 @@ package backend.academy.randomizer;
 import backend.academy.SettingsLoader;
 import backend.academy.entityes.Pixel;
 import java.security.SecureRandom;
-import java.util.List;
 
 public class Randomizer {
     SecureRandom random = new SecureRandom();

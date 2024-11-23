@@ -55,6 +55,19 @@ public class FractalImage {
         }
     }
 
+    public int hashPixelsState() {
+        int hash = 7;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                Pixel pixel = pixels[x][y];
+                if (pixel != null) {
+                    hash = 31 * hash + pixel.hashCode();
+                }
+            }
+        }
+        return hash;
+    }
+
     private double normalizePixels() {
         double max = 0;
         for (int x = 0; x < width; x++) {

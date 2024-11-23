@@ -9,13 +9,28 @@ import backend.academy.ui.components.FunctionalAlgorithmsSettingsPanel;
 import backend.academy.ui.components.SettingsPanel;
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.UIManager;
 
 public class MainApplication {
 
@@ -39,6 +54,8 @@ public class MainApplication {
     private Thread drawerThread;
     private boolean updateEventStarted = false;
     private int avgHitsPerSecond = 0;
+    private int fractalImageHash = 0;
+    private boolean forceUpdate = false;
 
     public void runApp() {
         Thread uiThread = new Thread(this::initializeUI);
@@ -115,6 +132,7 @@ public class MainApplication {
         JButton generateImageButton = createButton("Generate Image", e -> regenerateImage());
 
         settingsPanel = new SettingsPanel(settingsLoader, applySettingsButton, generateImageButton);
+        applySettingsButton.addActionListener(e -> forceUpdate = true);
         JScrollPane scrollPane = new JScrollPane(settingsPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.getVerticalScrollBar().setUnitIncrement(10);
@@ -187,16 +205,22 @@ public class MainApplication {
     }
 
     private void setupUpdateAction() {
-        Timer timer = new Timer(1000, e -> {
-            imageGenerator.getFractalImage().renderWithGamma(image, settingsLoader.getGamma());
-            imagePanel.repaint();
+        Timer timer = new Timer(500, e -> {
+            int newFractalImageHash = imageGenerator.getFractalImage().hashPixelsState();
+            if (this.fractalImageHash != newFractalImageHash || this.forceUpdate) {
+                this.forceUpdate = false;
+                this.fractalImageHash = newFractalImageHash;
+                imageGenerator.getFractalImage().renderWithGamma(image, settingsLoader.getGamma());
+                if (settingsLoader.isImageFxApply()) {
+                    imageProcessor.adjustContrast(image);
+                }
+                imagePanel.repaint();
+            }
+
             avgHitsPerSecond = (imageGenerator.getFractalImage().resetHits() + avgHitsPerSecond) / 2;
             hitsPerSecondLabel.setText("AHPS: " + formatHits(avgHitsPerSecond));
             progressBar.setValue(imageGenerator.getDrawersFinished());
 
-            if (settingsLoader.isImageFxApply()) {
-                imageProcessor.adjustContrast(image);
-            }
             progressBar.repaint();
         });
         timer.start();
