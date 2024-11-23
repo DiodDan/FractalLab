@@ -126,11 +126,20 @@ public class MainApplication {
         buttonPanel.setBackground(UIManager.getColor("Panel.background"));
 
         progressBar.setForeground(new Color(34, 94, 0));
+        setupAHPSLabel();
         buttonPanel.add(progressBar);
 
         addSaveImageButton();
         addStopRenderButton();
         mainFrame.add(buttonPanel, BorderLayout.NORTH);
+    }
+
+    private void setupAHPSLabel() {
+        buttonPanel.add(hitsPerSecondLabel, BorderLayout.WEST);
+        hitsPerSecondLabel.setToolTipText("Average hits per second");
+        hitsPerSecondLabel.setForeground(Color.WHITE);
+        hitsPerSecondLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        hitsPerSecondLabel.setPreferredSize(new Dimension(150, 30));
     }
 
     private void addSaveImageButton() {
