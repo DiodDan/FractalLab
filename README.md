@@ -7,6 +7,7 @@
 ## [🔗 Images Examples](./assets/md/images-examples.md)
 ## [🔗 Processing benchmark](./assets/md/processing-benchmark.md)
 
-
+## For the additional points:
+![img.png](assets/imaes/img1.png)
 
 
