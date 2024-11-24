@@ -1,8 +1,14 @@
 package backend.academy.generators.transformations;
 
+import backend.academy.SettingsLoader;
 import backend.academy.entityes.Point;
 
-public class Hyperbolic implements Transformation {
+public class Hyperbolic extends Transformation {
+
+    public Hyperbolic(SettingsLoader settingsLoader) {
+        super(settingsLoader);
+    }
+
     @Override
     public void apply(Point point) {
         double x = point.getX();
@@ -11,8 +17,12 @@ public class Hyperbolic implements Transformation {
         double f = Math.atan2(x, y);
         double r = Math.sqrt(x * x + y * y);
 
-        point.setX(Math.sin(f) / r);
-        point.setY(r * Math.cos(f));
+
+        double newX = Math.sin(f) / r;
+        double newY = r * Math.cos(f);
+
+        point.setX(applyXMirroring(newX, newY));
+        point.setY(applyYMirroring(newX, newY));
     }
 
     @Override

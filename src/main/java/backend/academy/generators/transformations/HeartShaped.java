@@ -1,8 +1,13 @@
 package backend.academy.generators.transformations;
 
+import backend.academy.SettingsLoader;
 import backend.academy.entityes.Point;
 
-public class HeartShaped implements Transformation {
+public class HeartShaped extends Transformation {
+
+    public HeartShaped(SettingsLoader settingsLoader) {
+        super(settingsLoader);
+    }
 
     @Override
     public void apply(Point point) {
@@ -10,10 +15,12 @@ public class HeartShaped implements Transformation {
         double y = point.getY();
         double r = Math.sqrt(x * x + y * y);
         double f = Math.atan2(x, y);
-        point.setX(r
-            * Math.sin(r * f));
-        point.setY(-r
-            * Math.cos(r * f));
+
+        double newX = r * Math.sin(r * f);
+        double newY = -r * Math.cos(r * f);
+
+        point.setX(applyXMirroring(newX, newY));
+        point.setY(applyYMirroring(newX, newY));
     }
 
     @Override

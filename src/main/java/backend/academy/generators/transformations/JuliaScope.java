@@ -1,10 +1,15 @@
 package backend.academy.generators.transformations;
 
+import backend.academy.SettingsLoader;
 import backend.academy.entityes.Point;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class JuliaScope implements Transformation {
+public class JuliaScope extends Transformation {
+
+    public JuliaScope(SettingsLoader settingsLoader) {
+        super(settingsLoader);
+    }
 
     public static final double POWER = 20.0;
     public static final double DISTANCE = 0.2;
@@ -31,8 +36,8 @@ public class JuliaScope implements Transformation {
         // Update the point
         double newX = scale * Math.cos(t);
         double newY = scale * Math.sin(t);
-        point.setX(newX);
-        point.setY(newY);
+        point.setX(applyXMirroring(newX, newY));
+        point.setY(applyYMirroring(newX, newY));
     }
 
     @Override

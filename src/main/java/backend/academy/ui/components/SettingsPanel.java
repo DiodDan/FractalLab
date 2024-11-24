@@ -41,6 +41,8 @@ public class SettingsPanel extends JPanel {
     private final JSlider horizontalBiasSlider;
     private final JSlider verticalBiasSlider;
     private final SettingsLoader settings;
+    private final JCheckBox mirrorXCheckbox;
+    private final JCheckBox mirrorYCheckbox;
     private static final int SCALE_DELIMITER = 1000;
 
     public SettingsPanel(SettingsLoader settings, JButton runtimeSettingsButton, JButton regenerateImageButton) {
@@ -56,6 +58,11 @@ public class SettingsPanel extends JPanel {
         imageFxApplyCheckbox = new JCheckBox("Apply Image FX", settings.isImageFxApply());
         generationSettingsPanel.add(imageFxApplyCheckbox);
         addProperty(generationSettingsPanel, "Contrast", String.valueOf(settings.getImageContrast()), "Contrast value");
+
+        mirrorXCheckbox = new JCheckBox("Mirror X", settings.isMirrorX());
+        applicationSettingsPanel.add(mirrorXCheckbox);
+        mirrorYCheckbox = new JCheckBox("Mirror Y", settings.isMirrorY());
+        applicationSettingsPanel.add(mirrorYCheckbox);
 
         scaleSlider = createSlider(applicationSettingsPanel, "Scale", 1, settings.getMaxScale(),
             (int) settings.getScale() * SCALE_DELIMITER);
@@ -120,6 +127,7 @@ public class SettingsPanel extends JPanel {
             String.valueOf(settings.getYBiasMax()), "Maximum Y bias");
         addProperty(panel, MAX_THREADS,
             String.valueOf(settings.getMaxDrawerThreads()), "Maximum number of threads");
+
     }
 
     private void addImageSettings(JPanel panel) {
@@ -168,6 +176,8 @@ public class SettingsPanel extends JPanel {
         settingsLoader.setYBiasMin(Double.parseDouble(properties.get(Y_BIAS_MIN).getText()));
         settingsLoader.setYBiasMax(Double.parseDouble(properties.get(Y_BIAS_MAX).getText()));
         settingsLoader.setMaxDrawerThreads(Integer.parseInt(properties.get(MAX_THREADS).getText()));
+        settingsLoader.setMirrorX(mirrorXCheckbox.isSelected());
+        settingsLoader.setMirrorY(mirrorYCheckbox.isSelected());
     }
 
     private void updateImageSettings(SettingsLoader settingsLoader) {

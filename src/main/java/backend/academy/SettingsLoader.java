@@ -51,23 +51,23 @@ public class SettingsLoader {
 
     @Setter private int generatorNonDrawMoves;
     private final List<Transformation> availableFunctionalTransformations = List.of(
-        new DiscShaped(),
-        new Spherical(),
-        new Sinusoid(),
-        new HeartShaped(),
-        new Polar(),
-        new Cosine(),
-        new Horseshoe(),
-        new Handkerchief(),
-        new Diamond(),
-        new Julia(),
-        new Swirl(),
-        new Fire(),
-        new FireRevision(),
-        new Cylinder(),
-        new JuliaScope(),
-        new Hyperbolic(),
-        new Waves(1.0, 2.0, 0.5, 1.5)
+        new DiscShaped(this),
+        new Spherical(this),
+        new Sinusoid(this),
+        new HeartShaped(this),
+        new Polar(this),
+        new Cosine(this),
+        new Horseshoe(this),
+        new Handkerchief(this),
+        new Diamond(this),
+        new Julia(this),
+        new Swirl(this),
+        new Fire(this),
+        new FireRevision(this),
+        new Cylinder(this),
+        new JuliaScope(this),
+        new Hyperbolic(this),
+        new Waves(this)
     );
     private final List<AffineTransformation> affineTransformations = new ArrayList<>();
     @Setter private List<Transformation> functionalTransformations = List.of();
@@ -101,8 +101,8 @@ public class SettingsLoader {
     private int rightBound;
     private int topBound;
     private int bottomBound;
-    private boolean useSymmetry;
-    private final List<AffineTransformation> symmetryTransformations = new ArrayList<>();
+    @Setter private boolean mirrorX;
+    @Setter private boolean mirrorY;
 
     public SettingsLoader() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
@@ -157,7 +157,8 @@ public class SettingsLoader {
             rightBound = Integer.parseInt(properties.getProperty("generator.rightBound"));
             topBound = Integer.parseInt(properties.getProperty("generator.topBound"));
             bottomBound = Integer.parseInt(properties.getProperty("generator.bottomBound"));
-            useSymmetry = Boolean.parseBoolean(properties.getProperty("generator.useSymmetry"));
+            mirrorX = Boolean.parseBoolean(properties.getProperty("generator.mirrorX"));
+            mirrorY = Boolean.parseBoolean(properties.getProperty("generator.mirrorY"));
 
         } catch (IOException ex) {
             log.error("Error loading application properties: {}", ex.getMessage());

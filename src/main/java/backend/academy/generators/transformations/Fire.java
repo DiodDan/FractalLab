@@ -1,8 +1,14 @@
 package backend.academy.generators.transformations;
 
+import backend.academy.SettingsLoader;
 import backend.academy.entityes.Point;
 
-public class Fire implements Transformation {
+public class Fire extends Transformation {
+
+    public Fire(SettingsLoader settingsLoader) {
+        super(settingsLoader);
+    }
+
 
     public static final double UPWARD_MOTION_CONSTANT = 0.5;
     public static final int ROTATION_ANGEL = 50;
@@ -36,8 +42,8 @@ public class Fire implements Transformation {
         double rotatedY = newX * Math.sin(alpha) + newY * Math.cos(alpha);
 
         // Set transformed coordinates
-        point.setX(rotatedX);
-        point.setY(rotatedY);
+        point.setX(applyXMirroring(rotatedX, rotatedY));
+        point.setY(applyYMirroring(rotatedX, rotatedY));
     }
 
     @Override

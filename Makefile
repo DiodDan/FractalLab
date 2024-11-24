@@ -13,3 +13,9 @@ clean_lint:
 
 wlint:
 	mvn checkstyle:check modernizer:modernizer spotbugs:check pmd:check pmd:cpd-check | findstr "[ERROR]"
+
+build:
+	mvn clean install
+
+run:
+	java -jar target/fractal-flame-1.0.0.jar

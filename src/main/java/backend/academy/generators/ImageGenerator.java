@@ -62,16 +62,36 @@ public class ImageGenerator {
 
             // Add pixel if within bounds
             if (step >= 0 && isWithinBounds(currentPoint, settings)) {
-                int x = calculateX(currentPoint, settings);
-                int y = calculateY(currentPoint, settings);
-                if (isValidPixel(x, y, settings)) {
-                    fractalImage.addPixel(x, y, affineTransformation.getPixel());
-                    fractalImage.incrementHits();
-                }
+                recalculateAndAddPoint(settings, currentPoint, affineTransformation);
+            }
+            if (settings.isMirrorX() && step >= 0 && isWithinBounds(currentPoint, settings)) {
+                currentPoint.setX(-currentPoint.getX());
+                recalculateAndAddPoint(settings, currentPoint, affineTransformation);
+            }
+            if (settings.isMirrorY() && step >= 0 && isWithinBounds(currentPoint, settings)) {
+                currentPoint.setY(-currentPoint.getY());
+                recalculateAndAddPoint(settings, currentPoint, affineTransformation);
+            }
+            if (settings.isMirrorY() && settings.isMirrorX() && step >= 0 && isWithinBounds(currentPoint, settings)) {
+                currentPoint.setX(-currentPoint.getX());
+                recalculateAndAddPoint(settings, currentPoint, affineTransformation);
             }
         }
 
         incrementFinishedDrawers();
+    }
+
+    private void recalculateAndAddPoint(
+        SettingsLoader settings,
+        Point currentPoint,
+        AffineTransformation affineTransformation
+    ) {
+        int x = calculateX(currentPoint, settings);
+        int y = calculateY(currentPoint, settings);
+        if (isValidPixel(x, y, settings)) {
+            fractalImage.addPixel(x, y, affineTransformation.getPixel());
+            fractalImage.incrementHits();
+        }
     }
 
     private void shutdownExecutor(ExecutorService executorService) {

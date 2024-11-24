@@ -1,10 +1,15 @@
 package backend.academy.generators.transformations;
 
+import backend.academy.SettingsLoader;
 import backend.academy.entityes.Point;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class FireRevision implements Transformation {
+public class FireRevision extends Transformation {
+
+    public FireRevision(SettingsLoader settingsLoader) {
+        super(settingsLoader);
+    }
 
     public static final double UPWARD_MOTION_CONSTANT = 0.6;
     public static final int TURBULENCE = 10;
@@ -29,8 +34,8 @@ public class FireRevision implements Transformation {
         double swirlStrength = Math.sin(r * NOISE_STRENGTH) * COEF;
         newX += swirlStrength * Math.cos(theta);
         newY += swirlStrength * Math.sin(theta);
-        point.setX(newX);
-        point.setY(newY);
+        point.setX(applyXMirroring(newX, newY));
+        point.setY(applyYMirroring(newX, newY));
     }
 
     @Override
