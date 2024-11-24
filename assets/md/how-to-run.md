@@ -7,11 +7,25 @@
 To build the project, run the following command:
 
 ```bash
-    mvn clean install
+    make build
 ```
+
 or
+
 ```bash
     mvn clean package
 ```
 
 ## Run
+
+To run it simply use commands from below
+
+```bash
+    make run
+```
+
+or
+
+```bash
+    java -jar target/fractal-flame-1.0.0.jar
+```
