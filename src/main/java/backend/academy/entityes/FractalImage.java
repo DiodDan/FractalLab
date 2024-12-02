@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 
 @Accessors(fluent = false)
 public class FractalImage {
+
     private final int width;
     private final int height;
     private int hitsFromLastCheck = 0;

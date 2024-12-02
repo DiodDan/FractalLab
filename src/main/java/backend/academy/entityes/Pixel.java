@@ -53,4 +53,24 @@ public class Pixel {
     public Color getColor() {
         return new Color(this.r, this.g, this.b);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Pixel pixel)) {
+            return false;
+        }
+        return pixel.r == r && pixel.g == g && pixel.b == b;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + r;
+        result = 31 * result + g;
+        result = 31 * result + b;
+        return result;
+    }
 }
